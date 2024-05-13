@@ -26,6 +26,7 @@
 #include <BRepPrimAPI_MakeSphere.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepAlgoAPI_Common.hxx>
 #include <AIS_Shape.hxx>
 #include <Prs3d_Drawer.hxx>
 #include <BRepBndLib.hxx>
@@ -33,6 +34,7 @@
 #include <Geom_Plane.hxx>
 #include <GeomAPI_IntCS.hxx>
 #include <list>
+#include <thread>
 
 struct Panel {
 	gp_Pnt origin;

@@ -45,25 +45,25 @@ BOOL CMFCOCC01Doc::InitOCC()
 
 	m_hViewer->SetDefaultLights();
 	m_hViewer->SetLightOn();
-	//m_hViewer->BgGradientColors(Quantity_NOC_ALICEBLUE, Quantity_NOC_LIGHTCYAN);
 	m_hViewer->SetDefaultBgGradientColors(Quantity_NOC_ALICEBLUE, Quantity_NOC_CORNSILK1, Aspect_GradientFillMethod_Vertical);
-	//myViewer->SetDefaultBackgroundColor(Quantity_NOC_BLUE1);//改变背景颜色
-	//m_hViewer->SetDefaultBackgroundColor(Quantity_NOC_BLUE1);
+	//改变背景颜色
 
 	m_hAISContext = new AIS_InteractiveContext(m_hViewer);  //创建一个交互文档
-    //m_hAISContext->DefaultDrawer()->UIsoAspect()->SetNumber(11);
-	//m_hAISContext->DefaultDrawer()->VIsoAspect()->SetNumber(11);
+	m_hAISContext->DefaultDrawer()->SetWireDraw(Standard_True);
+	m_hAISContext->DefaultDrawer()->SetFaceBoundaryDraw(Standard_True);
+	//m_hAISContext->DefaultDrawer()->
+	//m_hAISContext->DefaultDrawer()->SetUIsoAspect(11);
 
   //这里设置实体的显示模式
 	m_hAISContext->SetDisplayMode(AIS_Shaded, Standard_True);
-	m_hAISContext->SetAutomaticHilight(Standard_False);
+	m_hAISContext->SetAutomaticHilight(Standard_True);
 	return TRUE;
 }
 
 void CMFCOCC01Doc::StartSimulation()
 {
 	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions = {
-		{20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}
+		{20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
 	};
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -130,7 +130,8 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
 	InitOCC();
-	StartSimulation();
+	std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
+	simulationThread.detach();
 
 	return TRUE;
 }

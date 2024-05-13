@@ -86,6 +86,26 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	}
 
 	context->UpdateCurrentViewer();
+
+
+	// Start the ImGui frame
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// ImGui content
+	ImGui::Begin("OpenCascade Panels");
+	ImGui::Text("Panels Configuration:");
+	for (const auto& panel : pDoc->GetPanelList()) {
+		ImGui::Text("Panel at (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
+	}
+	ImGui::End();
+
+	// Render ImGui
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
 	SwapBuffers(pDC->m_hDC);
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
@@ -118,6 +138,15 @@ void CMFCOCC01View::OnInitialUpdate()
 	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_WHITE, 0.1, V3d_ZBUFFER);
 
 	FitAll();
+
+	/* IMGUI */
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplWin32_Init(m_hWnd);
+    ImGui_ImplOpenGL3_Init("#version 130");
 	
 }
 
@@ -185,7 +214,6 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 {
 
 	CView::OnMouseMove(nFlags, point);
-
 	if (nFlags && MK_LBUTTON) {
 		//myView->Rotate(point.x,point.y); 
 		m_hView->Rotation(point.x, point.y);
