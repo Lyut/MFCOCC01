@@ -7,6 +7,11 @@
 #ifndef PCH_H
 #define PCH_H
 
+#define GLFW_INCLUDE_GLU
+
+#define GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_EXPOSE_NATIVE_WIN32
+
 // aggiungere qui le intestazioni da precompilare
 #include "framework.h"
 #include <gl/GL.h>
@@ -35,6 +40,12 @@
 #include <GeomAPI_IntCS.hxx>
 #include <list>
 #include <thread>
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+#include <Aspect_Window.hxx>
+#include <Aspect_DisplayConnection.hxx>
+#include <Aspect_RenderingContext.hxx>
+
 
 struct Panel {
 	gp_Pnt origin;

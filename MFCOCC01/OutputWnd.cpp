@@ -71,7 +71,7 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndTabs.AddTab(&m_wndOutputFind, strTabName, (UINT)2);*/
 
 	// Inserire nelle schede di output un testo fittizio (niente di particolare)
-	FillBuildWindow();
+	//FillBuildWindow();
 	//FillDebugWindow();
 	//FillFindWindow();
 
@@ -105,16 +105,16 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 	dc.SelectObject(pOldFont);
 }
 
-void COutputWnd::FillBuildWindow()
+void COutputWnd::AddOutputMessage(LPCTSTR str)
 {
-	m_wndOutputBuild.AddString(_T("Qui viene visualizzato l'output di Compila."));
+	m_wndOutputBuild.AddString(str);
 }
 
 void COutputWnd::UpdateFonts()
 {
 	m_wndOutputBuild.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);
+	//m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
+	//m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);
 }
 
 /////////////////////////////////////////////////////////////////////////////

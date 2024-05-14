@@ -16,6 +16,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+//#include <backends/imgui_impl_win32.cpp>
 
 
 // CMFCOCC01View
@@ -116,6 +117,7 @@ void CMFCOCC01View::OnInitialUpdate()
 {
 
 	CView::OnInitialUpdate();
+
 	m_bHlrModeIsOn = Standard_False;
 	m_hView = GetDocument()->GetViewer()->CreateView();
 	m_hView->SetComputedMode(m_bHlrModeIsOn);
@@ -156,7 +158,6 @@ void CMFCOCC01View::FitAll()
 		m_hView->FitAll();
 	m_hView->ZFitAll();
 }
-
 
 
 // Stampa di CMFCOCC01View

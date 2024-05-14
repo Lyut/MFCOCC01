@@ -16,6 +16,7 @@ public:
 
 // Attributi
 public:
+	COutputWnd& GetOutputWnd() { return m_wndOutput; }
 
 // Operazioni
 public:

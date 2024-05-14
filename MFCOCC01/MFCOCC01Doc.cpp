@@ -45,9 +45,9 @@ BOOL CMFCOCC01Doc::InitOCC()
 
 	m_hViewer->SetDefaultLights();
 	m_hViewer->SetLightOn();
-	m_hViewer->SetDefaultBgGradientColors(Quantity_NOC_ALICEBLUE, Quantity_NOC_CORNSILK1, Aspect_GradientFillMethod_Vertical);
+	m_hViewer->SetDefaultBgGradientColors(Quantity_NOC_ALICEBLUE, Quantity_NOC_GRAY89, Aspect_GradientFillMethod_Vertical);
 	//改变背景颜色
-
+	//m_hViewer->SetDefaultTypeOfView(V3d_ORTHOGRAPHIC);
 	m_hAISContext = new AIS_InteractiveContext(m_hViewer);  //创建一个交互文档
 	m_hAISContext->DefaultDrawer()->SetWireDraw(Standard_True);
 	m_hAISContext->DefaultDrawer()->SetFaceBoundaryDraw(Standard_True);
@@ -62,6 +62,8 @@ BOOL CMFCOCC01Doc::InitOCC()
 
 void CMFCOCC01Doc::StartSimulation()
 {
+	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
+
 	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions = {
 		{20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
 	};
@@ -69,10 +71,16 @@ void CMFCOCC01Doc::StartSimulation()
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> dis(1, 508);
 
+
 	for (const auto& dimensions : panel_dimensions) {
 		Standard_Real width = dimensions.first;
 		Standard_Real height = dimensions.second;
 		gp_Pnt start_point = findEmptyPosition(width, height);
+
+		CString message;
+		message.Format(_T("Cerco di allocare pezzo di dimensioni: %f, %f"), (double&) width, (double&)height);
+		pMainFrame->GetOutputWnd().AddOutputMessage(message);
+
 		int randomIndex = dis(gen);
 		TopoDS_Shape smaller_panel = BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + width, start_point.Y() + height, start_point.Z() + 10.0)).Shape();
 		if (!panelOverlaps(smaller_panel)) {
@@ -129,9 +137,11 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
-	InitOCC();
-	std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
-	simulationThread.detach();
+	if (InitOCC()) {
+		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
+		//simulationThread.detach();
+		StartSimulation();
+	}
 
 	return TRUE;
 }
