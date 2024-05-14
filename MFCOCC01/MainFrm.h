@@ -17,6 +17,7 @@ public:
 // Attributi
 public:
 	COutputWnd& GetOutputWnd() { return m_wndOutput; }
+	CClassView& GetClassView() { return m_wndClassView; }
 
 // Operazioni
 public:

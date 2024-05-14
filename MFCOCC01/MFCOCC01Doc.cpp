@@ -92,6 +92,9 @@ void CMFCOCC01Doc::StartSimulation()
 				newPanel.color = static_cast<Quantity_NameOfColor>(randomIndex);
 
 				panelList.push_back(newPanel);
+				CString panelStr;
+				panelStr.Format(_T("Pannello (%f, %f)"), (double&)width, (double&)height);
+				pMainFrame->GetClassView().InsertItem(panelStr);
 		}
 	}
 }

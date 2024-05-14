@@ -133,6 +133,11 @@ void CClassView::FillClassView()
 	m_wndClassView.Expand(hRoot, TVE_EXPAND);
 }
 
+void CClassView::InsertItem(LPCTSTR str) {
+	HTREEITEM hRoot = m_wndClassView.InsertItem(str, 0, 0);
+	m_wndClassView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+}
+
 void CClassView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
 	CTreeCtrl* pWndTree = (CTreeCtrl*)&m_wndClassView;

@@ -21,6 +21,7 @@ public:
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
+	void InsertItem(LPCTSTR str);
 
 protected:
 	CClassToolBar m_wndToolBar;

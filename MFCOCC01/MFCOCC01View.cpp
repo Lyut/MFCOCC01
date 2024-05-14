@@ -88,7 +88,6 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	context->UpdateCurrentViewer();
 
-
 	// Start the ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -137,7 +136,7 @@ void CMFCOCC01View::OnInitialUpdate()
 
 	m_hView->SetWindow(hWntWindow);
 	m_hView->ZBufferTriedronSetup(Quantity_NOC_RED, Quantity_NOC_GREEN, Quantity_NOC_BLUE1, 0.8, 0.05, 12);
-	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_WHITE, 0.1, V3d_ZBUFFER);
+	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLACK, 0.07, V3d_ZBUFFER);
 
 	FitAll();
 
