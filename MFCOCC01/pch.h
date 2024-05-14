@@ -56,4 +56,10 @@ struct Panel {
 
 };
 
+/**************************************************************************************/
+
+struct OutputMessageMsg {
+	CString message;
+};
+
 #endif //PCH_H

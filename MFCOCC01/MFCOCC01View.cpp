@@ -55,7 +55,8 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 	return CView::PreCreateWindow(cs);
 
 }
-
+#define PROGETTO 1
+#define BUILD 44
 // Disegno di CMFCOCC01View
 
 void CMFCOCC01View::OnDraw(CDC* pDC)
@@ -88,20 +89,17 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	context->UpdateCurrentViewer();
 
-	// Start the ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	// ImGui content
-	ImGui::Begin("OpenCascade Panels");
-	ImGui::Text("Panels Configuration:");
+	ImGui::Begin("LUDOCUT MFCOCC01 #130");
+	ImGui::Text("Configurazione pannelli:");
 	for (const auto& panel : pDoc->GetPanelList()) {
-		ImGui::Text("Panel at (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
+		ImGui::Text("Pannello in (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
 	}
 	ImGui::End();
 
-	// Render ImGui
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -138,7 +136,10 @@ void CMFCOCC01View::OnInitialUpdate()
 	m_hView->ZBufferTriedronSetup(Quantity_NOC_RED, Quantity_NOC_GREEN, Quantity_NOC_BLUE1, 0.8, 0.05, 12);
 	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLACK, 0.07, V3d_ZBUFFER);
 
+	m_hView->SetProj(V3d_Zpos);
 	FitAll();
+	m_hView->Redraw();
+	//FitAll();
 
 	/* IMGUI */
     IMGUI_CHECKVERSION();

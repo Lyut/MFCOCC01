@@ -16,6 +16,12 @@
     <Filter Include="File di origine\imgui">
       <UniqueIdentifier>{8161d67d-3453-4f98-a9b1-490c387baa60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="File di origine\opticore">
+      <UniqueIdentifier>{8506cbdf-4279-42f9-9be9-34874fae22ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File di intestazione\opticore">
+      <UniqueIdentifier>{12610847-7310-48a2-8f61-7a28f473b4d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MFCOCC01.h">
