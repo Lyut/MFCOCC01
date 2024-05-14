@@ -57,6 +57,7 @@ protected:
 private:
 	Panel main_panel;
 	std::list<Panel> panelList;
+	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions;
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
 };

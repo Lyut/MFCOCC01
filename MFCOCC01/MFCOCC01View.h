@@ -28,6 +28,7 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual void ViewZoom(Standard_Integer iMouseX, Standard_Integer iMouseY, Standard_Real dZoomFactor);
 	Standard_Boolean ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 protected:
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
@@ -62,6 +63,8 @@ private:
 	Handle(V3d_View) m_view;
 	Handle_V3d_View m_hView;
 	Standard_Boolean m_bHlrModeIsOn;
+	void mainloop();
+	void renderGui();
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp

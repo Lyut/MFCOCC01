@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_COMMAND_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnApplicationLook)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 	ON_WM_SETTINGCHANGE()
+	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -427,4 +428,15 @@ void CMainFrame::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
 	CMDIFrameWndEx::OnSettingChange(uFlags, lpszSection);
 	m_wndOutput.UpdateFonts();
+}
+
+LRESULT CMainFrame::OnCopyData(WPARAM wParam, LPARAM lParam)
+{
+	PCOPYDATASTRUCT pCopyDataStruct = (PCOPYDATASTRUCT)lParam;
+	if (pCopyDataStruct->dwData == 1)
+	{
+		OutputMessageMsg* pData = (OutputMessageMsg*)pCopyDataStruct->lpData;
+		GetOutputWnd().AddOutputMessage(pData->message);
+	}
+	return 0;
 }

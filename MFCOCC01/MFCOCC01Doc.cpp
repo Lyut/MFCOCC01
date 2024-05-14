@@ -64,7 +64,7 @@ void CMFCOCC01Doc::StartSimulation()
 {
 	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
 
-	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions = {
+	panel_dimensions = {
 		{20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
 	};
 	std::random_device rd;

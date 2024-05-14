@@ -16,7 +16,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-//#include <backends/imgui_impl_win32.cpp>
+#include <backends/imgui_impl_win32.cpp>
 
 
 // CMFCOCC01View
@@ -89,20 +89,7 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	context->UpdateCurrentViewer();
 
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
-
-	ImGui::Begin("LUDOCUT MFCOCC01 #130");
-	ImGui::Text("Configurazione pannelli:");
-	for (const auto& panel : pDoc->GetPanelList()) {
-		ImGui::Text("Pannello in (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
-	}
-	ImGui::End();
-
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
+	renderGui();
 
 	SwapBuffers(pDC->m_hDC);
 
@@ -213,12 +200,17 @@ void CMFCOCC01View::OnSize(UINT nType, int cx, int cy)
 
 void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 {
-
+	//FlushViewEvents(m_context, m_hView, Standard_True);
+	renderGui();
 	CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
-		//myView->Rotate(point.x,point.y); 
 		m_hView->Rotation(point.x, point.y);
+		Invalidate(FALSE);
 	}
+
+	HDC hdc = ::GetDC(m_hWnd);
+	SwapBuffers(hdc);
+	::ReleaseDC(m_hWnd, hdc);
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -347,6 +339,12 @@ BOOL CMFCOCC01View::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			ASSERT(0);
 	}
 
+	FlushViewEvents(m_context, m_hView, Standard_True);
+	renderGui();
+	HDC hdc = ::GetDC(m_hWnd);
+	SwapBuffers(hdc);
+	::ReleaseDC(m_hWnd, hdc);
+
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
 
@@ -374,3 +372,61 @@ CMFCOCC01Doc* CMFCOCC01View::GetDocument() const // la versione non debug è inl
 
 
 // Gestori di messaggi di CMFCOCC01View
+
+void CMFCOCC01View::renderGui()
+{
+	ImGuiIO& aIO = ImGui::GetIO();
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::ShowMetricsWindow();
+	ImGui::ShowDemoWindow();
+
+	ImGui::Begin("LUDOCUT MFCOCC01 DEBUG");
+	ImGui::Text("Menù debug");
+	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	{
+		if (ImGui::BeginTabItem("pannelli"))
+		{
+			for (const auto& panel : GetDocument()->GetPanelList()) {
+				ImGui::Text("pannello in (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
+			}
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("aggiungi pann."))
+		{
+			static int i0 = 10;
+			ImGui::InputInt("alt.", &i0);
+			static int i1 = 10;
+			ImGui::InputInt("larg.", &i1);
+			if (ImGui::Button("aggiungi")) {
+				Panel newPanel;
+				newPanel.origin = gp_Pnt();
+				newPanel.height = i0;
+				newPanel.width = i1;
+				newPanel.thickness = 10;
+				newPanel.color = static_cast<Quantity_NameOfColor>(5);
+
+				GetDocument()->GetPanelList().push_back(newPanel);
+				GetDocument()->StartSimulation();
+			}
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
+	}
+	
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+BOOL CMFCOCC01View::PreTranslateMessage(MSG* pMsg)
+{
+	if (ImGui_ImplWin32_WndProcHandler(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam))
+		return true;
+	return CView::PreTranslateMessage(pMsg);
+}
