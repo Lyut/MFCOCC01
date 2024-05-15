@@ -40,8 +40,8 @@
 #include <GeomAPI_IntCS.hxx>
 #include <list>
 #include <thread>
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
+//#include <GLFW/glfw3.h>
+//#include <GLFW/glfw3native.h>
 #include <Aspect_Window.hxx>
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_RenderingContext.hxx>

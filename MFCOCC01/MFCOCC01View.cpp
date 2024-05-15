@@ -207,10 +207,9 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 		m_hView->Rotation(point.x, point.y);
 		Invalidate(FALSE);
 	}
-
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
-	::ReleaseDC(m_hWnd, hdc);
+	::ReleaseDC(m_hWnd, hdc); 
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)

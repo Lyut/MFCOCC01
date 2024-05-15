@@ -137,9 +137,6 @@
     <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
       <Filter>File di origine\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\backends\imgui_impl_glfw.cpp">
-      <Filter>File di origine\imgui</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MFCOCC01.rc">
