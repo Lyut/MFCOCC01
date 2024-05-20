@@ -40,7 +40,9 @@ END_MESSAGE_MAP()
 CMFCOCC01View::CMFCOCC01View() noexcept
 {
 	// TODO: aggiungere qui il codice di costruzione.
-
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(1, 508);
 }
 
 CMFCOCC01View::~CMFCOCC01View()
@@ -59,11 +61,13 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 
 void CMFCOCC01View::OnDraw(CDC* pDC)
 {
+
 	CMFCOCC01Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
 
+	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
@@ -73,7 +77,7 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	TopoDS_Shape Box = mkBox.Shape();
 	Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 
-	GetDocument()->GetAISContext()->Display(myAISBox, Standard_False);
+	GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
 
 	for (const Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.height, panel.width, panel.thickness);
@@ -90,6 +94,10 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	renderGui();
 
 	SwapBuffers(pDC->m_hDC);
+	OutputMessageMsg* pData = new OutputMessageMsg;
+	pData->message = _T("OnDraw called");
+	if (pMainFrame)
+		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
 }
@@ -202,15 +210,15 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 	CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
 		m_hView->Rotation(point.x, point.y);
-		//m_hView->Redraw();
 		//Invalidate(FALSE);
-		//m_hView->Invalidate();
 	}
+	Invalidate();
+	UpdateWindow();
 	//m_hView->Redraw();
-	renderGui();
+	/*renderGui();
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
-	::ReleaseDC(m_hWnd, hdc);
+	::ReleaseDC(m_hWnd, hdc);*/
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -400,19 +408,22 @@ void CMFCOCC01View::renderGui()
 			}
 			if (ImGui::BeginTabItem("aggiungi pann."))
 			{
-				static int i0 = 10;
+				static int i0 = 15;
 				ImGui::InputInt("alt.", &i0);
 				static int i1 = 10;
 				ImGui::InputInt("larg.", &i1);
 				if (ImGui::Button("aggiungi")) {
-					Panel newPanel;
-					newPanel.origin = gp_Pnt();
-					newPanel.height = i0;
-					newPanel.width = i1;
-					newPanel.thickness = 10;
-					newPanel.color = static_cast<Quantity_NameOfColor>(5);
+					Panel* newPanel = new Panel;
+					newPanel->origin = gp_Pnt();
+					newPanel->height = i0;
+					newPanel->width = i1;
+					newPanel->thickness = 10;
+					std::mt19937 gen(rd());
+					std::uniform_int_distribution<int> dis(1, 508);
+					int randomIndex = dis(gen);
+					newPanel->color = static_cast<Quantity_NameOfColor>(randomIndex);
 
-					GetDocument()->GetPanelList().push_back(newPanel);
+					GetDocument()->GetPanelList().push_back(*newPanel);
 					GetDocument()->StartSimulation();
 				}
 				ImGui::EndTabItem();
@@ -420,14 +431,6 @@ void CMFCOCC01View::renderGui()
 			ImGui::EndTabBar();
 			ImGui::TreePop();
 		}
-	}
-	if (ImGui::TreeNode("MFC"))
-	{
-		ImGui::TreePop();
-	}
-
-	if (ImGui::Button("avvia simulaz.")) {
-
 	}
 	
 	ImGui::End();

@@ -65,6 +65,7 @@ private:
 	Standard_Boolean m_bHlrModeIsOn;
 	void mainloop();
 	void renderGui();
+	std::random_device rd;
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp
