@@ -55,8 +55,6 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 	return CView::PreCreateWindow(cs);
 
 }
-#define PROGETTO 1
-#define BUILD 44
 // Disegno di CMFCOCC01View
 
 void CMFCOCC01View::OnDraw(CDC* pDC)
@@ -77,7 +75,7 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	GetDocument()->GetAISContext()->Display(myAISBox, Standard_False);
 
-	for (Panel& panel : pDoc->GetPanelList()) {
+	for (const Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.height, panel.width, panel.thickness);
 		TopoDS_Shape Box = mkBox.Shape();
 		Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
@@ -201,15 +199,18 @@ void CMFCOCC01View::OnSize(UINT nType, int cx, int cy)
 void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 {
 	//FlushViewEvents(m_context, m_hView, Standard_True);
-	renderGui();
 	CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
 		m_hView->Rotation(point.x, point.y);
-		Invalidate(FALSE);
+		//m_hView->Redraw();
+		//Invalidate(FALSE);
+		//m_hView->Invalidate();
 	}
+	//m_hView->Redraw();
+	renderGui();
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
-	::ReleaseDC(m_hWnd, hdc); 
+	::ReleaseDC(m_hWnd, hdc);
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -374,47 +375,59 @@ CMFCOCC01Doc* CMFCOCC01View::GetDocument() const // la versione non debug è inl
 
 void CMFCOCC01View::renderGui()
 {
-	ImGuiIO& aIO = ImGui::GetIO();
+	//ImGuiIO& aIO = ImGui::GetIO();
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::ShowMetricsWindow();
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowMetricsWindow();
+	//ImGui::ShowDemoWindow();
 
 	ImGui::Begin("LUDOCUT MFCOCC01 DEBUG");
 	ImGui::Text("Menù debug");
 	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	if (ImGui::TreeNode("Pannelli/tagli"))
 	{
-		if (ImGui::BeginTabItem("pannelli"))
+		if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
 		{
-			for (const auto& panel : GetDocument()->GetPanelList()) {
-				ImGui::Text("pannello in (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
+			if (ImGui::BeginTabItem("lista"))
+			{
+				for (const auto& panel : GetDocument()->GetPanelList()) {
+					ImGui::BulletText("pannello in (%.1f, %.1f, %.1f)", panel.origin.X(), panel.origin.Y(), panel.origin.Z());
+				}
+				ImGui::EndTabItem();
 			}
-			ImGui::EndTabItem();
-		}
-		if (ImGui::BeginTabItem("aggiungi pann."))
-		{
-			static int i0 = 10;
-			ImGui::InputInt("alt.", &i0);
-			static int i1 = 10;
-			ImGui::InputInt("larg.", &i1);
-			if (ImGui::Button("aggiungi")) {
-				Panel newPanel;
-				newPanel.origin = gp_Pnt();
-				newPanel.height = i0;
-				newPanel.width = i1;
-				newPanel.thickness = 10;
-				newPanel.color = static_cast<Quantity_NameOfColor>(5);
+			if (ImGui::BeginTabItem("aggiungi pann."))
+			{
+				static int i0 = 10;
+				ImGui::InputInt("alt.", &i0);
+				static int i1 = 10;
+				ImGui::InputInt("larg.", &i1);
+				if (ImGui::Button("aggiungi")) {
+					Panel newPanel;
+					newPanel.origin = gp_Pnt();
+					newPanel.height = i0;
+					newPanel.width = i1;
+					newPanel.thickness = 10;
+					newPanel.color = static_cast<Quantity_NameOfColor>(5);
 
-				GetDocument()->GetPanelList().push_back(newPanel);
-				GetDocument()->StartSimulation();
+					GetDocument()->GetPanelList().push_back(newPanel);
+					GetDocument()->StartSimulation();
+				}
+				ImGui::EndTabItem();
 			}
-			ImGui::EndTabItem();
+			ImGui::EndTabBar();
+			ImGui::TreePop();
 		}
-		ImGui::EndTabBar();
+	}
+	if (ImGui::TreeNode("MFC"))
+	{
+		ImGui::TreePop();
+	}
+
+	if (ImGui::Button("avvia simulaz.")) {
+
 	}
 	
 	ImGui::End();

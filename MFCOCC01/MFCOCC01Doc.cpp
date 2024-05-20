@@ -60,78 +60,121 @@ BOOL CMFCOCC01Doc::InitOCC()
 	return TRUE;
 }
 
-void CMFCOCC01Doc::StartSimulation()
-{
-	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetMainWnd());
-
-	panel_dimensions = {
-		{20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
-	};
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> dis(1, 508);
-
-
-	for (const auto& dimensions : panel_dimensions) {
-		Standard_Real width = dimensions.first;
-		Standard_Real height = dimensions.second;
-		gp_Pnt start_point = findEmptyPosition(width, height);
-
-		CString message;
-		message.Format(_T("Cerco di allocare pezzo di dimensioni: %f, %f"), (double&) width, (double&)height);
-		pMainFrame->GetOutputWnd().AddOutputMessage(message);
-
-		int randomIndex = dis(gen);
-		TopoDS_Shape smaller_panel = BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + width, start_point.Y() + height, start_point.Z() + 10.0)).Shape();
-		if (!panelOverlaps(smaller_panel)) {
-				Panel newPanel;
-				newPanel.origin = start_point;
-				newPanel.height = dimensions.first;
-				newPanel.width = dimensions.second;
-				newPanel.thickness = 10;
-				newPanel.color = static_cast<Quantity_NameOfColor>(randomIndex);
-
-				panelList.push_back(newPanel);
-				CString panelStr;
-				panelStr.Format(_T("Pannello (%f, %f)"), (double&)width, (double&)height);
-				pMainFrame->GetClassView().InsertItem(panelStr);
-		}
-	}
+bool compareByArea(const std::pair<Standard_Real, Standard_Real>& a, const std::pair<Standard_Real, Standard_Real>& b) {
+	return (a.first * a.second) > (b.first * b.second);
 }
 
-gp_Pnt CMFCOCC01Doc::findEmptyPosition(Standard_Real width, Standard_Real height)
-{
-	Standard_Real step = 1.0;
-	for (Standard_Real x = 0.0; x <= 300 - width; x += step) {
-		for (Standard_Real y = 0.0; y <= 100 - height; y += step) {
-			gp_Pnt start_point(x, y, 0.0);
-			if (!panelOverlaps(BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + width, start_point.Y() + height, start_point.Z() + 10.0)).Shape())) {
-				return start_point;
-			}
-			// Try rotating it
-			if (!panelOverlaps(BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + height, start_point.Y() + width, start_point.Z() + 10.0)).Shape())) {
-				return start_point;
-			}
-		}
-	}
-	return gp_Pnt(); // Return null point if no empty position found
+
+void CMFCOCC01Doc::StartSimulation() {
+    CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+
+    panel_dimensions = {
+        {20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
+    };
+
+    std::sort(panel_dimensions.begin(), panel_dimensions.end(), compareByArea);
+
+    // Initialize free space with the entire area
+    freeSpaces.insert({ 0.0, 0.0, 300.0, 100.0 });
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(1, 508);
+
+    for (const auto& dimensions : panel_dimensions) {
+        Standard_Real width = dimensions.first;
+        Standard_Real height = dimensions.second;
+        bool found;
+        gp_Pnt start_point = findEmptyPosition(width, height, found);
+
+        CString message;
+        message.Format(_T("Cerco di allocare pannello di dimensioni: %f, %f"), (double&)width, (double&)height);
+        OutputMessageMsg* pData = new OutputMessageMsg;
+        pData->message = message;
+        if (pMainFrame)
+            pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);
+
+        if (found) {
+            int randomIndex = dis(gen);
+            TopoDS_Shape smaller_panel = BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + width, start_point.Y() + height, start_point.Z() + 10.0)).Shape();
+            if (!panelOverlaps(smaller_panel)) {
+                Panel newPanel;
+                newPanel.origin = start_point;
+                newPanel.height = height;
+                newPanel.width = width;
+                newPanel.thickness = 10;
+                newPanel.color = static_cast<Quantity_NameOfColor>(randomIndex);
+
+                panelList.push_back(newPanel);
+                CString panelStr;
+                panelStr.Format(_T("Pannello (%f, %f)"), (double&)width, (double&)height);
+                InsertItemMsg* pData = new InsertItemMsg;
+                pData->strItem = panelStr;
+                if (pMainFrame)
+                    pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
+                
+
+                // Update free spaces
+                updateFreeSpaces(start_point, width, height);
+            }
+        }
+    }
 }
 
-bool CMFCOCC01Doc::panelOverlaps(TopoDS_Shape panel)
-{
-	Bnd_Box panel_bbox, existing_panel_bbox;
-	BRepBndLib::Add(panel, panel_bbox);
-	for (const auto& existing_panel : panelList) {
-		BRepPrimAPI_MakeBox mkBox(existing_panel.origin, existing_panel.height, existing_panel.width, existing_panel.thickness);
-		TopoDS_Shape Box = mkBox.Shape();
-		BRepBndLib::Add(Box, existing_panel_bbox);
-		if (panel_bbox.IsOut(existing_panel_bbox) == 0 || existing_panel_bbox.IsOut(panel_bbox) == 0) {
-			return true;
-		}
-	}
-	return false;
+gp_Pnt CMFCOCC01Doc::findEmptyPosition(Standard_Real width, Standard_Real height, bool& found) {
+    for (const auto& space : freeSpaces) {
+        if (space.width >= width && space.height >= height) {
+            found = true;
+            return gp_Pnt(space.x, space.y, 0.0);
+        }
+        if (space.width >= height && space.height >= width) { // Try rotating
+            found = true;
+            return gp_Pnt(space.x, space.y, 0.0);
+        }
+    }
+    found = false;
+    return gp_Pnt(); // Return null point if no empty position found
 }
 
+bool CMFCOCC01Doc::panelOverlaps(const TopoDS_Shape& panel) {
+    Bnd_Box panel_bbox;
+    BRepBndLib::Add(panel, panel_bbox);
+
+    for (const auto& existing_panel : panelList) {
+        TopoDS_Shape existing_box = BRepPrimAPI_MakeBox(existing_panel.origin, existing_panel.width, existing_panel.height, existing_panel.thickness).Shape();
+        Bnd_Box existing_bbox;
+        BRepBndLib::Add(existing_box, existing_bbox);
+
+        if (!panel_bbox.IsOut(existing_bbox) || !existing_bbox.IsOut(panel_bbox)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void CMFCOCC01Doc::updateFreeSpaces(const gp_Pnt& point, Standard_Real width, Standard_Real height) {
+    std::set<FreeSpace> newFreeSpaces;
+
+    for (const auto& space : freeSpaces) {
+        if (point.X() == space.x && point.Y() == space.y) {
+            // Split the remaining free space
+            if (space.width > width) {
+                newFreeSpaces.insert({ space.x + width, space.y, space.width - width, height });
+            }
+            if (space.height > height) {
+                newFreeSpaces.insert({ space.x, space.y + height, width, space.height - height });
+            }
+            if (space.width > width && space.height > height) {
+                newFreeSpaces.insert({ space.x + width, space.y + height, space.width - width, space.height - height });
+            }
+        }
+        else {
+            newFreeSpaces.insert(space);
+        }
+    }
+
+    freeSpaces = newFreeSpaces;
+}
 
 BOOL CMFCOCC01Doc::OnNewDocument()
 {
@@ -141,9 +184,8 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
 	if (InitOCC()) {
-		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
-		//simulationThread.detach();
-		StartSimulation();
+		std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
+		simulationThread.detach();
 	}
 
 	return TRUE;

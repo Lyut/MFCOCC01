@@ -46,6 +46,8 @@
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_RenderingContext.hxx>
 
+#define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
+#define WM_INSERTITEM_MESSAGE (WM_USER + 2)
 
 struct Panel {
 	gp_Pnt origin;
@@ -56,10 +58,26 @@ struct Panel {
 
 };
 
+struct FreeSpace {
+    Standard_Real x, y, width, height;
+
+    bool operator<(const FreeSpace& other) const {
+        // Compare based on coordinates and then by size
+        if (x != other.x) return x < other.x;
+        if (y != other.y) return y < other.y;
+        if (width != other.width) return width < other.width;
+        return height < other.height;
+    }
+};
+
 /**************************************************************************************/
 
 struct OutputMessageMsg {
 	CString message;
+};
+
+struct InsertItemMsg {
+    CString strItem;
 };
 
 #endif //PCH_H
