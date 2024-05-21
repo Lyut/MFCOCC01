@@ -15,6 +15,7 @@
 // aggiungere qui le intestazioni da precompilare
 #include "framework.h"
 #include <gl/GL.h>
+#include <gl/GLU.h>
 #include <vector>
 #include <random>
 #include <OpenGl_GlFunctions.hxx>

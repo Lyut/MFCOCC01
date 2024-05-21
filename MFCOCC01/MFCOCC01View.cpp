@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(CMFCOCC01View, CView)
 	ON_WM_MOUSEMOVE()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
 // Costruzione/distruzione di CMFCOCC01View
@@ -85,6 +86,12 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 		myAISBox->SetColor(color);
 
 		GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+	}
+
+	if (!m_selectedBox.IsNull())
+	{
+		m_selectedBox->SetColor(Quantity_NOC_RED);
+		GetDocument()->GetAISContext()->Redisplay(m_selectedBox, true);
 	}
 
 	context->UpdateCurrentViewer();
@@ -181,6 +188,50 @@ void CMFCOCC01View::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
 	ClientToScreen(&point);
 	OnContextMenu(this, point);
+}
+
+void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	CView::OnLButtonDown(nFlags, point);
+
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	GLdouble modelview[16];
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
+	GLdouble projection[16];
+	glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+	GLfloat winX = static_cast<GLfloat>(point.x);
+	GLfloat winY = static_cast<GLfloat>(viewport[3] - point.y);
+
+	GLdouble posX, posY, posZ;
+	glReadPixels(winX, winY, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &posZ);
+	gluUnProject(winX, winY, posZ, modelview, projection, viewport, &posX, &posY, &posZ);
+	gp_Pnt clickPoint(posX, posY, posZ);
+
+	Handle(AIS_InteractiveContext) context = GetDocument()->GetAISContext();
+	context->MoveTo(point.x, point.y, m_hView, true);
+	if (context->HasDetected())
+	{
+		Handle(AIS_InteractiveObject) detected = context->DetectedInteractive();
+		if (!detected.IsNull() && detected->IsKind(STANDARD_TYPE(AIS_Shape)))
+		{
+			Handle(AIS_Shape) detectedShape = Handle(AIS_Shape)::DownCast(detected);
+
+			if (!m_selectedBox.IsNull())
+			{
+				m_selectedBox->SetColor(m_originalColor);
+				context->Redisplay(m_selectedBox, true);
+			}
+
+			m_selectedBox = detectedShape;
+			m_selectedBox->Color(m_originalColor);
+			m_selectedBox->SetColor(Quantity_NOC_RED);
+			context->Redisplay(m_selectedBox, true);
+		}
+	}
+
+	context->UpdateCurrentViewer();
 }
 
 void CMFCOCC01View::OnContextMenu(CWnd* /* pWnd */, CPoint point)
@@ -424,10 +475,12 @@ void CMFCOCC01View::renderGui()
 					GetDocument()->GetPanelList().push_back(*newPanel);
 					GetDocument()->StartSimulation();
 
-					HDC hdc = ::GetDC(m_hWnd);
-					FlushViewEvents(m_context, m_hView, Standard_True);
-					::ReleaseDC(m_hWnd, hdc);
-					//Invalidate();
+					//HDC hdc = ::GetDC(m_hWnd);
+					//UpdateWindow();
+					//m_hView->Redraw();
+					//FlushViewEvents(m_context, m_hView, Standard_True);
+					//::ReleaseDC(m_hWnd, hdc);
+					Invalidate();
 				}
 				ImGui::EndTabItem();
 			}

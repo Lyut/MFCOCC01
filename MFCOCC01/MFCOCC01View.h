@@ -55,6 +55,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -65,6 +66,8 @@ private:
 	Standard_Boolean m_bHlrModeIsOn;
 	void renderGui();
 	std::random_device rd;
+	Handle(AIS_Shape) m_selectedBox;
+	Quantity_Color m_originalColor;
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp
