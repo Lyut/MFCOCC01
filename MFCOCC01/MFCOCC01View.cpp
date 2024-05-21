@@ -58,10 +58,8 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 
 }
 // Disegno di CMFCOCC01View
-
 void CMFCOCC01View::OnDraw(CDC* pDC)
 {
-
 	CMFCOCC01Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
@@ -94,10 +92,10 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	renderGui();
 
 	SwapBuffers(pDC->m_hDC);
-	OutputMessageMsg* pData = new OutputMessageMsg;
-	pData->message = _T("OnDraw called");
-	if (pMainFrame)
-		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);
+	/*OutputMessageMsg* pData = new OutputMessageMsg;
+pData->message = _T("OnDraw called");
+if (pMainFrame)
+	pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);*/
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
 }
@@ -137,7 +135,7 @@ void CMFCOCC01View::OnInitialUpdate()
 	/* IMGUI */
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsDark();
 
     ImGui_ImplWin32_Init(m_hWnd);
@@ -212,13 +210,13 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 		m_hView->Rotation(point.x, point.y);
 		//Invalidate(FALSE);
 	}
-	Invalidate();
-	UpdateWindow();
+	//Invalidate(FALSE);
+	//UpdateWindow();
 	//m_hView->Redraw();
-	/*renderGui();
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
-	::ReleaseDC(m_hWnd, hdc);*/
+	renderGui();
+	::ReleaseDC(m_hWnd, hdc);
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -348,10 +346,10 @@ BOOL CMFCOCC01View::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	}
 
 	FlushViewEvents(m_context, m_hView, Standard_True);
-	renderGui();
-	HDC hdc = ::GetDC(m_hWnd);
-	SwapBuffers(hdc);
-	::ReleaseDC(m_hWnd, hdc);
+	//renderGui();
+	//HDC hdc = ::GetDC(m_hWnd);
+	//SwapBuffers(hdc);
+	//::ReleaseDC(m_hWnd, hdc);
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
@@ -383,13 +381,13 @@ CMFCOCC01Doc* CMFCOCC01View::GetDocument() const // la versione non debug è inl
 
 void CMFCOCC01View::renderGui()
 {
-	//ImGuiIO& aIO = ImGui::GetIO();
+	ImGuiIO& aIO = ImGui::GetIO();
 
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::ShowMetricsWindow();
+	ImGui::ShowMetricsWindow();
 	//ImGui::ShowDemoWindow();
 
 	ImGui::Begin("LUDOCUT MFCOCC01 DEBUG");
@@ -413,7 +411,7 @@ void CMFCOCC01View::renderGui()
 				static int i1 = 10;
 				ImGui::InputInt("larg.", &i1);
 				if (ImGui::Button("aggiungi")) {
-					Panel* newPanel = new Panel;
+					auto newPanel = std::make_shared<Panel>();
 					newPanel->origin = gp_Pnt();
 					newPanel->height = i0;
 					newPanel->width = i1;
@@ -425,6 +423,7 @@ void CMFCOCC01View::renderGui()
 
 					GetDocument()->GetPanelList().push_back(*newPanel);
 					GetDocument()->StartSimulation();
+					Invalidate();
 				}
 				ImGui::EndTabItem();
 			}
