@@ -63,7 +63,6 @@ private:
 	Handle(V3d_View) m_view;
 	Handle_V3d_View m_hView;
 	Standard_Boolean m_bHlrModeIsOn;
-	void mainloop();
 	void renderGui();
 	std::random_device rd;
 };

@@ -423,7 +423,11 @@ void CMFCOCC01View::renderGui()
 
 					GetDocument()->GetPanelList().push_back(*newPanel);
 					GetDocument()->StartSimulation();
-					Invalidate();
+
+					HDC hdc = ::GetDC(m_hWnd);
+					FlushViewEvents(m_context, m_hView, Standard_True);
+					::ReleaseDC(m_hWnd, hdc);
+					//Invalidate();
 				}
 				ImGui::EndTabItem();
 			}

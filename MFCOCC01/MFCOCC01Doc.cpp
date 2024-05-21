@@ -93,6 +93,7 @@ void CMFCOCC01Doc::StartSimulation() {
         pData->message = message;
         if (pMainFrame)
             pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);
+        delete pData;
 
         if (found) {
             int randomIndex = dis(gen);
@@ -112,6 +113,7 @@ void CMFCOCC01Doc::StartSimulation() {
                 pData->strItem = panelStr;
                 if (pMainFrame)
                     pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
+                delete pData;
                 
 
                 // Update free spaces
