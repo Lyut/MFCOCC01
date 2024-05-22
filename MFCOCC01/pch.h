@@ -7,6 +7,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+//#define USE_IMGUI
+
 #define GLFW_INCLUDE_GLU
 
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -58,25 +60,6 @@ struct Panel {
 	Quantity_Color color;
     Quantity_Color originalColor;
     Handle(AIS_Shape) shape;
-};
-
-struct BinaryTreeNode {
-    Panel* panel;
-    BinaryTreeNode* left;
-    BinaryTreeNode* right;
-};
-
-
-struct FreeSpace {
-    Standard_Real x, y, width, height;
-
-    bool operator<(const FreeSpace& other) const {
-        // Compare based on coordinates and then by size
-        if (x != other.x) return x < other.x;
-        if (y != other.y) return y < other.y;
-        if (width != other.width) return width < other.width;
-        return height < other.height;
-    }
 };
 
 /**************************************************************************************/

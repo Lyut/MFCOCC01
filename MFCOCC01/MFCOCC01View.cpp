@@ -16,7 +16,9 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#ifdef USE_IMGUI
 #include <backends/imgui_impl_win32.cpp>
+#endif
 
 
 // CMFCOCC01View
@@ -72,11 +74,11 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 	context->SetDisplayMode(AIS_Shaded, true);
 
-	BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 200.0, 200.0, 2.0);
-	TopoDS_Shape Box = mkBox.Shape();
-	Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
+	//BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 200.0, 200.0, 2.0);
+	//TopoDS_Shape Box = mkBox.Shape();
+	//Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 
-	GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+	//GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
 
 	for (Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);
@@ -98,14 +100,11 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	}
 
 	context->UpdateCurrentViewer();
-
+#ifdef USE_IMGUI
 	renderGui();
+#endif
 
 	SwapBuffers(pDC->m_hDC);
-	/*OutputMessageMsg* pData = new OutputMessageMsg;
-	pData->message = _T("OnDraw called");
-	if (pMainFrame)
-		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);*/
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
 }
@@ -148,6 +147,7 @@ void CMFCOCC01View::OnInitialUpdate()
 	m_hView->Redraw();
 	//FitAll();
 
+#ifdef USE_IMGUI
 	/* IMGUI */
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -156,6 +156,7 @@ void CMFCOCC01View::OnInitialUpdate()
 
     ImGui_ImplWin32_Init(m_hWnd);
     ImGui_ImplOpenGL3_Init("#version 130");
+#endif
 	
 }
 
@@ -288,10 +289,13 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 	if (nFlags && MK_LBUTTON) {
 		m_hView->Rotation(point.x, point.y);
 	}
+
+#ifdef USE_IMGUI
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
 	renderGui();
 	::ReleaseDC(m_hWnd, hdc);
+#endif 
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -450,6 +454,7 @@ CMFCOCC01Doc* CMFCOCC01View::GetDocument() const // la versione non debug è inl
 
 void CMFCOCC01View::renderGui()
 {
+#ifdef USE_IMGUI
 	ImGuiIO& aIO = ImGui::GetIO();
 
 	ImGui_ImplOpenGL3_NewFrame();
@@ -511,11 +516,14 @@ void CMFCOCC01View::renderGui()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 BOOL CMFCOCC01View::PreTranslateMessage(MSG* pMsg)
 {
+#ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam))
 		return true;
+#endif
 	return CView::PreTranslateMessage(pMsg);
 }

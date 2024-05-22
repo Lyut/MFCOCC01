@@ -67,12 +67,13 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-        Node("Block1", 5, 5),
-        Node("Block2", 10, 10)
+        Node("Block1", 5.0, 5.0),
+        Node("Block2", 10.0, 10.0),
+		Node("Block3", 100.0, 155.0)
     };
 
     packer.fit(blocks);
-
+	int thickness = 2;
     for (const auto& block : blocks) {
         CString panelStr;
         panelStr.Format(_T("%S (%f, %f)"), block.name, block.fit->x, block.fit->y);
@@ -91,10 +92,10 @@ void CMFCOCC01Doc::StartSimulation() {
 		delete pDataMsg;
 
         Panel* newPanel = new Panel;
-        newPanel->origin = gp_Pnt(Standard_Real(block.fit->x), Standard_Real(block.fit->y), 0);
-        newPanel->height = Standard_Real(block.fit->h);
-        newPanel->width = Standard_Real(block.fit->w);
-        newPanel->thickness = 10;
+        newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
+        newPanel->height = block.fit->h;
+        newPanel->width = block.fit->w;
+        newPanel->thickness = thickness + 5;
         newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
 
         // Add the panel to the panel list
