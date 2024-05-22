@@ -78,7 +78,7 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
 
-	for (const Panel& panel : pDoc->GetPanelList()) {
+	for (Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.height, panel.width, panel.thickness);
 		TopoDS_Shape Box = mkBox.Shape();
 		Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
@@ -86,6 +86,9 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 		myAISBox->SetColor(color);
 
 		GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+
+		panel.shape = myAISBox;
+		panel.originalColor = panel.color;
 	}
 
 	if (!m_selectedBox.IsNull())
@@ -100,9 +103,9 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	SwapBuffers(pDC->m_hDC);
 	/*OutputMessageMsg* pData = new OutputMessageMsg;
-pData->message = _T("OnDraw called");
-if (pMainFrame)
-	pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);*/
+	pData->message = _T("OnDraw called");
+	if (pMainFrame)
+		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);*/
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
 }
@@ -133,6 +136,12 @@ void CMFCOCC01View::OnInitialUpdate()
 	m_hView->SetWindow(hWntWindow);
 	m_hView->ZBufferTriedronSetup(Quantity_NOC_RED, Quantity_NOC_GREEN, Quantity_NOC_BLUE1, 0.8, 0.05, 12);
 	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLACK, 0.07, V3d_ZBUFFER);
+
+	Handle(Prs3d_Drawer) highlightStyle = GetDocument()->GetAISContext()->HighlightStyle();
+	highlightStyle->SetMethod(Aspect_TOHM_COLOR);
+	highlightStyle->SetColor(Quantity_NOC_BLACK); // Set to black or transparent
+	highlightStyle->SetTransparency(1.0); // Fully transparent
+	GetDocument()->GetAISContext()->SetHighlightStyle(Prs3d_TypeOfHighlight_Selected, highlightStyle);
 
 	m_hView->SetProj(V3d_Zpos);
 	FitAll();
@@ -218,15 +227,34 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			Handle(AIS_Shape) detectedShape = Handle(AIS_Shape)::DownCast(detected);
 
+			// Restore the original color of the previously selected panel
 			if (!m_selectedBox.IsNull())
 			{
-				m_selectedBox->SetColor(m_originalColor);
-				context->Redisplay(m_selectedBox, true);
+				for (Panel& panel : GetDocument()->GetPanelList())
+				{
+					if (panel.shape == m_selectedBox)
+					{
+						m_selectedBox->SetColor(panel.originalColor);
+						context->Redisplay(m_selectedBox, true);
+						break;
+					}
+				}
 			}
 
+			// Update m_selectedBox and set the new selection color
 			m_selectedBox = detectedShape;
-			m_selectedBox->Color(m_originalColor);
-			m_selectedBox->SetColor(Quantity_NOC_RED);
+
+			// Find the corresponding panel for the newly selected box and update its color
+			for (Panel& panel : GetDocument()->GetPanelList())
+			{
+				if (panel.shape == m_selectedBox)
+				{
+					m_originalColor = panel.color;  // Store the panel's original color
+					m_selectedBox->SetColor(Quantity_NOC_RED);
+					break;
+				}
+			}
+
 			context->Redisplay(m_selectedBox, true);
 		}
 	}

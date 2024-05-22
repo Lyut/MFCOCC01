@@ -56,8 +56,16 @@ struct Panel {
 	Standard_Real width;
 	Standard_Real thickness;
 	Quantity_Color color;
-
+    Quantity_Color originalColor;
+    Handle(AIS_Shape) shape;
 };
+
+struct BinaryTreeNode {
+    Panel* panel;
+    BinaryTreeNode* left;
+    BinaryTreeNode* right;
+};
+
 
 struct FreeSpace {
     Standard_Real x, y, width, height;

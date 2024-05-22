@@ -31,6 +31,8 @@ END_MESSAGE_MAP()
 CMFCOCC01Doc::CMFCOCC01Doc() noexcept
 {
 	// TODO: aggiungere qui il codice di costruzione unico
+    num_panels_to_generate = 10; // Default value, adjust as needed
+    binaryTreeRoot = nullptr; // Initialize the binary tree root to null
 
 }
 
@@ -64,15 +66,81 @@ bool compareByArea(const std::pair<Standard_Real, Standard_Real>& a, const std::
 	return (a.first * a.second) > (b.first * b.second);
 }
 
+void CMFCOCC01Doc::insertPanel(BinaryTreeNode*& root, Panel* panel) {
+    // If the tree is empty, create a new node
+    if (root == nullptr) {
+        root = new BinaryTreeNode;
+        root->panel = panel;
+        root->left = nullptr;
+        root->right = nullptr;
+    }
+    else {
+        // If the current node is not a leaf node, try inserting into its children
+        if (root->left != nullptr && root->right != nullptr) {
+            // Try inserting into the left subtree first
+            insertPanel(root->left, panel);
+            // If insertion into the left subtree fails, try the right subtree
+            if (root->left->panel == nullptr) {
+                insertPanel(root->right, panel);
+            }
+        }
+        else {
+            // If the current node is a leaf node and it's unoccupied, insert the panel here
+            if (root->panel == nullptr) {
+                root->panel = panel;
+            }
+            else {
+                // The current leaf node is occupied, so split it into two children
+                root->left = new BinaryTreeNode;
+                root->left->panel = nullptr;
+                root->left->left = nullptr;
+                root->left->right = nullptr;
+
+                root->right = new BinaryTreeNode;
+                root->right->panel = nullptr;
+                root->right->left = nullptr;
+                root->right->right = nullptr;
+
+                // Now recursively try inserting the panel into the new children
+                insertPanel(root->left, panel);
+            }
+        }
+    }
+}
+
+void CMFCOCC01Doc::buildBinaryTree(std::vector<Panel>& panelList, BinaryTreeNode*& root) {
+    // Iterate through the list of panels and insert each panel into the binary tree
+    for (Panel& panel : panelList) {
+        insertPanel(root, &panel);
+    }
+}
+
+// Function to recursively deallocate memory for the binary tree nodes
+void destroyBinaryTree(BinaryTreeNode*& root) {
+    if (root == nullptr) {
+        return;
+    }
+
+    // Recursively destroy the left subtree
+    destroyBinaryTree(root->left);
+    // Recursively destroy the right subtree
+    destroyBinaryTree(root->right);
+
+    // Delete the current node
+    delete root;
+    // Set the pointer to null to avoid dangling references
+    root = nullptr;
+}
 
 void CMFCOCC01Doc::StartSimulation() {
     CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
 
-    panel_dimensions = {
-        {20.0, 50.0}, {20.0, 50.0}, {5.0, 5.0}, {5.0, 5.0}, {5.0, 5.0}, {15.0, 50.0}, {5.0, 5.0}
-    };
+    // Clear any existing binary tree
+    destroyBinaryTree(binaryTreeRoot);
 
-    std::sort(panel_dimensions.begin(), panel_dimensions.end(), compareByArea);
+    // Clear any existing panel list and free spaces
+    panelList.clear();
+    freeSpaces.clear();
 
     // Initialize free space with the entire area
     freeSpaces.insert({ 0.0, 0.0, 300.0, 100.0 });
@@ -80,45 +148,46 @@ void CMFCOCC01Doc::StartSimulation() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> dis(1, 508);
+    Standard_Real minWidth = 10.0; // Minimum width of a panel
+    Standard_Real maxWidth = 50.0; // Maximum width of a panel
+    Standard_Real minHeight = 10.0; // Minimum height of a panel
+    Standard_Real maxHeight = 100.0; // Maximum height of a panel
 
-    for (const auto& dimensions : panel_dimensions) {
-        Standard_Real width = dimensions.first;
-        Standard_Real height = dimensions.second;
+    // Generate random values within the specified range
+   // Standard_Real width = minWidth + (maxWidth - minWidth) * (static_cast<Standard_Real>(rand()) / RAND_MAX);
+   // Standard_Real height = minHeight + (maxHeight - minHeight) * (static_cast<Standard_Real>(rand()) / RAND_MAX);
+
+    for (int i = 0; i < num_panels_to_generate; ++i) {
+        Standard_Real width = minWidth + (maxWidth - minWidth) * (static_cast<Standard_Real>(rand()) / RAND_MAX);
+        Standard_Real height = minHeight + (maxHeight - minHeight) * (static_cast<Standard_Real>(rand()) / RAND_MAX);
         bool found;
         gp_Pnt start_point = findEmptyPosition(width, height, found);
 
-        CString message;
-        message.Format(_T("Cerco di allocare pannello di dimensioni: %f, %f"), (double&)width, (double&)height);
-        OutputMessageMsg* pData = new OutputMessageMsg;
-        pData->message = message;
-        if (pMainFrame)
-            pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);
-        delete pData;
-
         if (found) {
-            int randomIndex = dis(gen);
-            TopoDS_Shape smaller_panel = BRepPrimAPI_MakeBox(start_point, gp_Pnt(start_point.X() + width, start_point.Y() + height, start_point.Z() + 10.0)).Shape();
-            if (!panelOverlaps(smaller_panel)) {
-                Panel newPanel;
-                newPanel.origin = start_point;
-                newPanel.height = height;
-                newPanel.width = width;
-                newPanel.thickness = 10;
-                newPanel.color = static_cast<Quantity_NameOfColor>(randomIndex);
+            Panel* newPanel = new Panel;
+            newPanel->origin = start_point;
+            newPanel->height = height;
+            newPanel->width = width;
+            newPanel->thickness = 10;
+            newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
 
-                panelList.push_back(newPanel);
-                CString panelStr;
-                panelStr.Format(_T("Pannello (%f, %f)"), (double&)width, (double&)height);
-                InsertItemMsg* pData = new InsertItemMsg;
-                pData->strItem = panelStr;
-                if (pMainFrame)
-                    pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
-                delete pData;
-                
+            // Insert the new panel into the binary tree
+            insertPanel(binaryTreeRoot, newPanel);
 
-                // Update free spaces
-                updateFreeSpaces(start_point, width, height);
-            }
+            // Update free spaces
+            updateFreeSpaces(start_point, width, height);
+
+            // Add the panel to the panel list
+            panelList.push_back(*newPanel);
+
+            // Notify the UI of the inserted panel
+            CString panelStr;
+            panelStr.Format(_T("Pannello (%f, %f)"), (double&)width, (double&)height);
+            InsertItemMsg* pData = new InsertItemMsg;
+            pData->strItem = panelStr;
+            if (pMainFrame)
+                pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
+            delete pData;
         }
     }
 }

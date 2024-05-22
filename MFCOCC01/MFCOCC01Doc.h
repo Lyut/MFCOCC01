@@ -27,6 +27,8 @@ public:
 	std::list<Panel>& GetPanelList() { return panelList; }
 	BOOL InitOCC();
 	void StartSimulation();
+	void insertPanel(BinaryTreeNode*& root, Panel* panel);
+	void buildBinaryTree(std::vector<Panel>& panelList, BinaryTreeNode*& root);
 // Operazioni
 public:
 
@@ -65,6 +67,9 @@ private:
 	std::list<Panel> panelList;
 	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions;
 	std::set<FreeSpace> freeSpaces;
+
+	int num_panels_to_generate; // Number of panels to generate during simulation
+	BinaryTreeNode* binaryTreeRoot; // Root node of the binary tree
 
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
