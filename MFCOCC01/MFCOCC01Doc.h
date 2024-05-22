@@ -11,6 +11,9 @@
 #include <set>
 #include <tuple>
 
+#include "Node.h"
+#include "Packer.h"
+
 
 
 class CMFCOCC01Doc : public CDocument
@@ -23,12 +26,9 @@ protected: // creare solo da serializzazione.
 public:
 	Handle(V3d_Viewer) GetViewer() { return m_hViewer; }
 	Handle(AIS_InteractiveContext) GetAISContext() { return m_hAISContext; }
-	Panel GetMainPanel() { return main_panel; }
 	std::list<Panel>& GetPanelList() { return panelList; }
 	BOOL InitOCC();
 	void StartSimulation();
-	void insertPanel(BinaryTreeNode*& root, Panel* panel);
-	void buildBinaryTree(std::vector<Panel>& panelList, BinaryTreeNode*& root);
 // Operazioni
 public:
 
@@ -50,9 +50,6 @@ public:
 #endif
 
 protected:
-	gp_Pnt findEmptyPosition(Standard_Real width, Standard_Real height, bool& found);
-	bool panelOverlaps(const TopoDS_Shape& panel);
-	void updateFreeSpaces(const gp_Pnt& point, Standard_Real width, Standard_Real height);
 
 // Funzioni generate per la mappa dei messaggi
 protected:
@@ -63,14 +60,8 @@ protected:
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
 private:
-	Panel main_panel;
 	std::list<Panel> panelList;
-	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions;
-	std::set<FreeSpace> freeSpaces;
-
-	int num_panels_to_generate; // Number of panels to generate during simulation
-	BinaryTreeNode* binaryTreeRoot; // Root node of the binary tree
-
+	Packer packer = Packer(200.0, 200.0);
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
 };

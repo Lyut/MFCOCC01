@@ -84,6 +84,12 @@
     <ClInclude Include="imgui\imgui_internal.h">
       <Filter>File di origine\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>File di intestazione\opticore</Filter>
+    </ClInclude>
+    <ClInclude Include="Packer.h">
+      <Filter>File di intestazione\opticore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCOCC01.cpp">
@@ -136,6 +142,12 @@
     </ClCompile>
     <ClCompile Include="imgui\backends\imgui_impl_opengl3.cpp">
       <Filter>File di origine\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>File di origine\opticore</Filter>
+    </ClCompile>
+    <ClCompile Include="Packer.cpp">
+      <Filter>File di origine\opticore</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

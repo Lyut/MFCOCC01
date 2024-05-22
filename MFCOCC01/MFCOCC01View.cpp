@@ -72,14 +72,14 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 	context->SetDisplayMode(AIS_Shaded, true);
 
-	BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 300.0, 100.0, 2.0);
+	BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 200.0, 200.0, 2.0);
 	TopoDS_Shape Box = mkBox.Shape();
 	Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 
 	GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
 
 	for (Panel& panel : pDoc->GetPanelList()) {
-		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.height, panel.width, panel.thickness);
+		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);
 		TopoDS_Shape Box = mkBox.Shape();
 		Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 		Quantity_Color color(panel.color);
@@ -139,7 +139,7 @@ void CMFCOCC01View::OnInitialUpdate()
 
 	Handle(Prs3d_Drawer) highlightStyle = GetDocument()->GetAISContext()->HighlightStyle();
 	highlightStyle->SetMethod(Aspect_TOHM_COLOR);
-	highlightStyle->SetColor(Quantity_NOC_BLACK); // Set to black or transparent
+	highlightStyle->SetColor(Quantity_NOC_ANTIQUEWHITE); // Set to black or transparent
 	highlightStyle->SetTransparency(1.0); // Fully transparent
 	GetDocument()->GetAISContext()->SetHighlightStyle(Prs3d_TypeOfHighlight_Selected, highlightStyle);
 
@@ -287,11 +287,7 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 	CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
 		m_hView->Rotation(point.x, point.y);
-		//Invalidate(FALSE);
 	}
-	//Invalidate(FALSE);
-	//UpdateWindow();
-	//m_hView->Redraw();
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
 	renderGui();
@@ -423,12 +419,6 @@ BOOL CMFCOCC01View::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		else
 			ASSERT(0);
 	}
-
-	FlushViewEvents(m_context, m_hView, Standard_True);
-	//renderGui();
-	//HDC hdc = ::GetDC(m_hWnd);
-	//SwapBuffers(hdc);
-	//::ReleaseDC(m_hWnd, hdc);
 
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
