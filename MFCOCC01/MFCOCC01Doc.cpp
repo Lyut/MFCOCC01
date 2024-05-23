@@ -208,6 +208,7 @@ void CMFCOCC01Doc::SendOutputMessage(LPCTSTR str, ...) {
 }
 
 void CMFCOCC01Doc::SendInsertItem(LPCTSTR str, ...) {
+	pMainFrame = GetMainFrame();
 	va_list args;
 	va_start(args, str);
 	CString panelStr;
