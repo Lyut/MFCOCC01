@@ -1,4 +1,11 @@
 #include "Packer.h"
+#include "pch.h"
+
+#ifndef SHARED_HANDLERS
+#include "MFCOCC01.h"
+#endif
+
+#include "MFCOCC01Doc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -14,10 +21,18 @@ void Packer::fit(std::vector<Node>& blocks) {
         block = &(*blockItr);
         if ((node = findNode(&root, block->w, block->h)) != nullptr) {
             block->fit = splitNode(node, block->w, block->h);
+            //CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+            //if (pMainFrame) {
+            //    CMFCOCC01Doc* pDoc = dynamic_cast<CMFCOCC01Doc*>(pMainFrame->GetActiveDocument());
+            //    pDoc->SendOutputMessage(_T("Il pannello %S è stato allocato."), block->name);
+            //}
         }
         else {
-            // No space left in the bin
-            // You may handle this case as per your requirement
+            CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+            if (pMainFrame) {
+                CMFCOCC01Doc* pDoc = dynamic_cast<CMFCOCC01Doc*>(pMainFrame->GetActiveDocument());
+                pDoc->SendOutputMessage(_T("Il pannello %S non ha spazio per essere allocato!"), block->name);
+            }
         }
         ++blockItr;
     }

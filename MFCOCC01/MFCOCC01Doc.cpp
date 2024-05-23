@@ -101,7 +101,6 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 	if (InitOCC()) {
 		std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
 		simulationThread.detach();
-		pMainFrame = GetMainFrame();
 	}
 
 	return TRUE;
@@ -194,6 +193,7 @@ void CMFCOCC01Doc::Dump(CDumpContext& dc) const
 // Comandi di CMFCOCC01Doc
 
 void CMFCOCC01Doc::SendOutputMessage(LPCTSTR str, ...) {
+	pMainFrame = GetMainFrame();
 	va_list args;
 	va_start(args, str);
 	CString msgStr;
@@ -201,7 +201,7 @@ void CMFCOCC01Doc::SendOutputMessage(LPCTSTR str, ...) {
 	va_end(args);
 	OutputMessageMsg* pDataMsg = new OutputMessageMsg;
 	pDataMsg->message = msgStr;
-	if (pMainFrame) {
+	if (pMainFrame != nullptr) {
 		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pDataMsg);
 	}
 	delete pDataMsg;
