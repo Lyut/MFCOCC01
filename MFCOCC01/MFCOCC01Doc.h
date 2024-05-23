@@ -27,11 +27,13 @@ public:
 	Handle(V3d_Viewer) GetViewer() { return m_hViewer; }
 	Handle(AIS_InteractiveContext) GetAISContext() { return m_hAISContext; }
 	std::list<Panel>& GetPanelList() { return panelList; }
-	BOOL InitOCC();
-	void StartSimulation();
+	CMainFrame* GetMainFrame() { return dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd()); };
 // Operazioni
 public:
-
+	BOOL InitOCC();
+	void StartSimulation();
+	void SendOutputMessage(LPCTSTR str, ...);
+	void SendInsertItem(LPCTSTR str, ...);
 // Sostituzioni
 public:
 	virtual BOOL OnNewDocument();
@@ -64,4 +66,5 @@ private:
 	Packer packer = Packer(200.0, 200.0);
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
+	CMainFrame* pMainFrame;
 };

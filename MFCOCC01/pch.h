@@ -48,6 +48,7 @@
 #include <Aspect_Window.hxx>
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_RenderingContext.hxx>
+#include <cstdarg> 
 
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)

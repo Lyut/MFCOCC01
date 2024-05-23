@@ -67,29 +67,16 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-        Node("Block1", 5.0, 5.0),
-        Node("Block2", 10.0, 10.0),
-		Node("Block3", 100.0, 155.0)
+        Node("Pannello1", 5.0, 5.0),
+        Node("Pannello2", 10.0, 10.0),
+		Node("Pannello3", 100.0, 155.0)
     };
 
     packer.fit(blocks);
 	int thickness = 2;
     for (const auto& block : blocks) {
-        CString panelStr;
-        panelStr.Format(_T("%S (%f, %f)"), block.name, block.fit->x, block.fit->y);
-        InsertItemMsg* pData = new InsertItemMsg;
-        pData->strItem = panelStr;
-        if (pMainFrame)
-            pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
-        delete pData;
-
-		CString msgStr;
-		msgStr.Format(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name, block.fit->x, block.fit->y, block.fit->w, block.fit->h);
-		OutputMessageMsg *pDataMsg = new OutputMessageMsg;
-		pDataMsg->message = msgStr;
-		if (pMainFrame)
-			pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pDataMsg);
-		delete pDataMsg;
+		SendInsertItem(_T("%S (%f, %f)"), block.name.c_str(), block.fit->x, block.fit->y);
+		SendOutputMessage(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name.c_str(), block.fit->x, block.fit->y, block.fit->w, block.fit->h);
 
         Panel* newPanel = new Panel;
         newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
@@ -114,6 +101,7 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 	if (InitOCC()) {
 		std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
 		simulationThread.detach();
+		pMainFrame = GetMainFrame();
 	}
 
 	return TRUE;
@@ -204,3 +192,31 @@ void CMFCOCC01Doc::Dump(CDumpContext& dc) const
 
 
 // Comandi di CMFCOCC01Doc
+
+void CMFCOCC01Doc::SendOutputMessage(LPCTSTR str, ...) {
+	va_list args;
+	va_start(args, str);
+	CString msgStr;
+	msgStr.FormatV(str, args);
+	va_end(args);
+	OutputMessageMsg* pDataMsg = new OutputMessageMsg;
+	pDataMsg->message = msgStr;
+	if (pMainFrame) {
+		pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pDataMsg);
+	}
+	delete pDataMsg;
+}
+
+void CMFCOCC01Doc::SendInsertItem(LPCTSTR str, ...) {
+	va_list args;
+	va_start(args, str);
+	CString panelStr;
+	panelStr.FormatV(str, args);
+	va_end(args);
+	InsertItemMsg* pData = new InsertItemMsg;
+	pData->strItem = panelStr;
+	if (pMainFrame) {
+		pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
+	}
+	delete pData;
+}
