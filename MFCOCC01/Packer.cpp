@@ -28,32 +28,38 @@ void Packer::fit(std::vector<Node>& blocks) {
             //}
         }
         else {
-            CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
-            if (pMainFrame) {
-                CMFCOCC01Doc* pDoc = dynamic_cast<CMFCOCC01Doc*>(pMainFrame->GetActiveDocument());
-                pDoc->SendOutputMessage(_T("Il pannello %S non ha spazio per essere allocato!"), block->name);
-            }
+            MessageBox(NULL, L"cannot allocate piece", L"lol", 0);
+            //CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+            //if (pMainFrame) {
+                //CMFCOCC01Doc* pDoc = dynamic_cast<CMFCOCC01Doc*>(pMainFrame->GetActiveDocument());
+                //pDoc->SendOutputMessage(_T("Il pannello %S non ha spazio per essere allocato!"), block->name);
+            //}
         }
         ++blockItr;
     }
 }
 
 Node* Packer::findNode(Node* root, double w, double h) {
+
     if (root->used) {
         Node* right = findNode(root->right, w, h);
-        return (right != nullptr ? right : findNode(root->down, w, h));
+        if (right != NULL) return right;
+        Node* down = findNode(root->down, w, h);
+        if (down != NULL) return down;
+        return nullptr;
+        //return (findNode(root->down, w, h) || findNode(root->right, w, h));
     }
     else if ((w <= root->w) && (h <= root->h)) {
         return root;
     }
     else {
-        return nullptr;
+        return NULL;
     }
 }
 
 Node* Packer::splitNode(Node* node, double w, double h) {
     node->used = true;
-    node->down = new Node(node->x, node->y + h, node->w, node->h - h);
+    node->down = new Node(node->x, node->y, node->w, node->h - h);
     node->right = new Node(node->x + w, node->y, node->w - w, h);
     return node;
 }
