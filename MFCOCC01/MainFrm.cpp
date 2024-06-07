@@ -11,6 +11,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "MFCOCC01Doc.h"
 
 // CMainFrame
 
@@ -30,6 +31,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_WM_SETTINGCHANGE()
 	ON_MESSAGE(WM_OUTPUTMSG_MESSAGE, OnOutputMsgMessage)
 	ON_MESSAGE(WM_INSERTITEM_MESSAGE, OnInsertItemMessage)
+	ON_COMMAND(ID_OTTIMIZZAZIONE_OTTIMIZZA, &CMainFrame::OnOptimize)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -445,4 +447,12 @@ LRESULT CMainFrame::OnInsertItemMessage(WPARAM wParam, LPARAM lParam)
 	InsertItemMsg* pData = (InsertItemMsg*)lParam;
 	GetClassView().InsertItem(pData->strItem);
 	return 0;
+}
+
+void CMainFrame::OnOptimize()
+{
+	COptiDiag cOptiDiag;
+	cOptiDiag.DoModal();
+	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	pDoc->StartSimulation();
 }

@@ -247,7 +247,42 @@ void CMFCOCC01App::SaveCustomState()
 {
 }
 
-// Gestori di messaggi di CMFCOCC01App
+CDocument* CMFCOCC01App::GenericGetActiveDocument(CRuntimeClass* pClass)
+{
+    ASSERT(NULL != pClass); // must be not NULL and derived from CDocument.
+    ASSERT(pClass->IsDerivedFrom(RUNTIME_CLASS(CDocument))); 
 
+    CDocument* pDoc = NULL;
+    CWnd* pWndMain = AfxGetMainWnd();
+    if(NULL != pWndMain)
+    {
+        if(pWndMain->IsKindOf(RUNTIME_CLASS(CMDIFrameWnd)))
+        {
+            // MDI application, so first we have to get the active MDI child frame.
+            CFrameWnd* pFrame = ((CMDIFrameWnd*)pWndMain)->MDIGetActive();
+            if(NULL != pFrame)
+            {
+                CDocument* pActiveDoc = pFrame->GetActiveDocument();
+                if((NULL != pActiveDoc) && pActiveDoc->IsKindOf(pClass))
+                {
+                    // The found document is of required type
+                    pDoc = pActiveDoc;
+                }
+            }
+        }
+        else if(pWndMain->IsKindOf(RUNTIME_CLASS(CFrameWnd)))
+        {
+            // SDI appllication so main window is the active frame. 
+            pDoc = ((CFrameWnd*)pWndMain)->GetActiveDocument();
+        }
+        else
+        {
+            ASSERT(FALSE); // Neither MDI nor SDI application.
+        }
+    }
+    return pDoc;
+}
+
+// Gestori di messaggi di CMFCOCC01App
 
 

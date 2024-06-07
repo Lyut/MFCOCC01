@@ -16,7 +16,9 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#ifdef USE_IMGUI
 #include <backends/imgui_impl_win32.cpp>
+#endif
 
 
 // CMFCOCC01View
@@ -72,20 +74,23 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 	context->SetDisplayMode(AIS_Shaded, true);
 
-	BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 300.0, 100.0, 2.0);
-	TopoDS_Shape Box = mkBox.Shape();
-	Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
+	//BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 200.0, 200.0, 2.0);
+	//TopoDS_Shape Box = mkBox.Shape();
+	//Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 
-	GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+	//GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
 
-	for (const Panel& panel : pDoc->GetPanelList()) {
-		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.height, panel.width, panel.thickness);
+	for (Panel& panel : pDoc->GetPanelList()) {
+		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);
 		TopoDS_Shape Box = mkBox.Shape();
 		Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 		Quantity_Color color(panel.color);
 		myAISBox->SetColor(color);
 
 		GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+
+		panel.shape = myAISBox;
+		panel.originalColor = panel.color;
 	}
 
 	if (!m_selectedBox.IsNull())
@@ -95,14 +100,11 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	}
 
 	context->UpdateCurrentViewer();
-
+#ifdef USE_IMGUI
 	renderGui();
+#endif
 
 	SwapBuffers(pDC->m_hDC);
-	/*OutputMessageMsg* pData = new OutputMessageMsg;
-pData->message = _T("OnDraw called");
-if (pMainFrame)
-	pMainFrame->SendMessage(WM_OUTPUTMSG_MESSAGE, 0, (LPARAM)pData);*/
 
 	// TODO: aggiungere qui il codice di disegno per i dati nativi.
 }
@@ -134,11 +136,18 @@ void CMFCOCC01View::OnInitialUpdate()
 	m_hView->ZBufferTriedronSetup(Quantity_NOC_RED, Quantity_NOC_GREEN, Quantity_NOC_BLUE1, 0.8, 0.05, 12);
 	m_hView->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_BLACK, 0.07, V3d_ZBUFFER);
 
+	Handle(Prs3d_Drawer) highlightStyle = GetDocument()->GetAISContext()->HighlightStyle();
+	highlightStyle->SetMethod(Aspect_TOHM_COLOR);
+	highlightStyle->SetColor(Quantity_NOC_ANTIQUEWHITE); // Set to black or transparent
+	highlightStyle->SetTransparency(1.0); // Fully transparent
+	GetDocument()->GetAISContext()->SetHighlightStyle(Prs3d_TypeOfHighlight_Selected, highlightStyle);
+
 	m_hView->SetProj(V3d_Zpos);
 	FitAll();
 	m_hView->Redraw();
 	//FitAll();
 
+#ifdef USE_IMGUI
 	/* IMGUI */
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -147,6 +156,7 @@ void CMFCOCC01View::OnInitialUpdate()
 
     ImGui_ImplWin32_Init(m_hWnd);
     ImGui_ImplOpenGL3_Init("#version 130");
+#endif
 	
 }
 
@@ -218,15 +228,34 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			Handle(AIS_Shape) detectedShape = Handle(AIS_Shape)::DownCast(detected);
 
+			// Restore the original color of the previously selected panel
 			if (!m_selectedBox.IsNull())
 			{
-				m_selectedBox->SetColor(m_originalColor);
-				context->Redisplay(m_selectedBox, true);
+				for (Panel& panel : GetDocument()->GetPanelList())
+				{
+					if (panel.shape == m_selectedBox)
+					{
+						m_selectedBox->SetColor(panel.originalColor);
+						context->Redisplay(m_selectedBox, true);
+						break;
+					}
+				}
 			}
 
+			// Update m_selectedBox and set the new selection color
 			m_selectedBox = detectedShape;
-			m_selectedBox->Color(m_originalColor);
-			m_selectedBox->SetColor(Quantity_NOC_RED);
+
+			// Find the corresponding panel for the newly selected box and update its color
+			for (Panel& panel : GetDocument()->GetPanelList())
+			{
+				if (panel.shape == m_selectedBox)
+				{
+					m_originalColor = panel.color;  // Store the panel's original color
+					m_selectedBox->SetColor(Quantity_NOC_RED);
+					break;
+				}
+			}
+
 			context->Redisplay(m_selectedBox, true);
 		}
 	}
@@ -259,15 +288,14 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 	CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
 		m_hView->Rotation(point.x, point.y);
-		//Invalidate(FALSE);
 	}
-	//Invalidate(FALSE);
-	//UpdateWindow();
-	//m_hView->Redraw();
+
+#ifdef USE_IMGUI
 	HDC hdc = ::GetDC(m_hWnd);
 	SwapBuffers(hdc);
 	renderGui();
 	::ReleaseDC(m_hWnd, hdc);
+#endif 
 }
 
 Standard_Boolean CMFCOCC01View::ConvertClickToPoint(Standard_Integer iMouseX, Standard_Integer iMouseY, gp_Pln plnInt, Handle(V3d_View) hView, gp_Pnt& ptResult)
@@ -396,12 +424,6 @@ BOOL CMFCOCC01View::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			ASSERT(0);
 	}
 
-	FlushViewEvents(m_context, m_hView, Standard_True);
-	//renderGui();
-	//HDC hdc = ::GetDC(m_hWnd);
-	//SwapBuffers(hdc);
-	//::ReleaseDC(m_hWnd, hdc);
-
 	return CView::OnMouseWheel(nFlags, zDelta, pt);
 }
 
@@ -432,6 +454,7 @@ CMFCOCC01Doc* CMFCOCC01View::GetDocument() const // la versione non debug è inl
 
 void CMFCOCC01View::renderGui()
 {
+#ifdef USE_IMGUI
 	ImGuiIO& aIO = ImGui::GetIO();
 
 	ImGui_ImplOpenGL3_NewFrame();
@@ -493,11 +516,14 @@ void CMFCOCC01View::renderGui()
 
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 BOOL CMFCOCC01View::PreTranslateMessage(MSG* pMsg)
 {
+#ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(pMsg->hwnd, pMsg->message, pMsg->wParam, pMsg->lParam))
 		return true;
+#endif
 	return CView::PreTranslateMessage(pMsg);
 }

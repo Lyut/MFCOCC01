@@ -8,7 +8,7 @@
 #endif
 
 #include "resource.h"       // simboli principali
-
+#include "COptiDiag.h"
 
 
 // CMFCOCC01App:
@@ -20,6 +20,7 @@ class CMFCOCC01App : public CWinAppEx
 public:
 	CMFCOCC01App() noexcept;
 	Handle_Graphic3d_GraphicDriver GetGraphicDriver() const;
+	CDocument* GenericGetActiveDocument(CRuntimeClass* pClass);
 private:
 	Handle_Graphic3d_GraphicDriver m_hGraphicDriver;
 

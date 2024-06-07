@@ -11,6 +11,9 @@
 #include <set>
 #include <tuple>
 
+#include "Node.h"
+#include "Packer.h"
+
 
 
 class CMFCOCC01Doc : public CDocument
@@ -23,13 +26,14 @@ protected: // creare solo da serializzazione.
 public:
 	Handle(V3d_Viewer) GetViewer() { return m_hViewer; }
 	Handle(AIS_InteractiveContext) GetAISContext() { return m_hAISContext; }
-	Panel GetMainPanel() { return main_panel; }
 	std::list<Panel>& GetPanelList() { return panelList; }
-	BOOL InitOCC();
-	void StartSimulation();
+	CMainFrame* GetMainFrame() { return dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd()); };
 // Operazioni
 public:
-
+	BOOL InitOCC();
+	void StartSimulation();
+	void SendOutputMessage(LPCTSTR str, ...);
+	void SendInsertItem(LPCTSTR str, ...);
 // Sostituzioni
 public:
 	virtual BOOL OnNewDocument();
@@ -48,9 +52,6 @@ public:
 #endif
 
 protected:
-	gp_Pnt findEmptyPosition(Standard_Real width, Standard_Real height, bool& found);
-	bool panelOverlaps(const TopoDS_Shape& panel);
-	void updateFreeSpaces(const gp_Pnt& point, Standard_Real width, Standard_Real height);
 
 // Funzioni generate per la mappa dei messaggi
 protected:
@@ -61,11 +62,9 @@ protected:
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
 private:
-	Panel main_panel;
 	std::list<Panel> panelList;
-	std::vector<std::pair<Standard_Real, Standard_Real>> panel_dimensions;
-	std::set<FreeSpace> freeSpaces;
-
+	Packer packer = Packer(100.0, 100.0);
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
+	CMainFrame* pMainFrame;
 };

@@ -7,6 +7,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+#define USE_IMGUI
+
 #define GLFW_INCLUDE_GLU
 
 #define GLFW_EXPOSE_NATIVE_WGL
@@ -46,6 +48,7 @@
 #include <Aspect_Window.hxx>
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_RenderingContext.hxx>
+#include <cstdarg> 
 
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
@@ -56,19 +59,8 @@ struct Panel {
 	Standard_Real width;
 	Standard_Real thickness;
 	Quantity_Color color;
-
-};
-
-struct FreeSpace {
-    Standard_Real x, y, width, height;
-
-    bool operator<(const FreeSpace& other) const {
-        // Compare based on coordinates and then by size
-        if (x != other.x) return x < other.x;
-        if (y != other.y) return y < other.y;
-        if (width != other.width) return width < other.width;
-        return height < other.height;
-    }
+    Quantity_Color originalColor;
+    Handle(AIS_Shape) shape;
 };
 
 /**************************************************************************************/
