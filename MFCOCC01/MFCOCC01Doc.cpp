@@ -67,26 +67,30 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-        Node("Pannello1", 5.0, 5.0),
-        Node("Pannello2", 10.0, 10.0),
-		Node("Pannello3", 100.0, 155.0)
+        Node("Pannello1", 200.0, 200.0),
+		Node("Pannello1", 15.0, 15.0),
+		Node("Pannello1", 10.0, 10.0),
+		//Node("Pannello2", 10.0, 10.0),
     };
 
     packer.fit(blocks);
 	int thickness = 2;
     for (const auto& block : blocks) {
-		SendInsertItem(_T("%S (%f, %f)"), block.name.c_str(), block.fit->x, block.fit->y);
-		SendOutputMessage(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name.c_str(), block.fit->x, block.fit->y, block.fit->w, block.fit->h);
+		if (block.fit != nullptr) {
+			SendInsertItem(_T("%S (%f, %f)"), block.name.c_str(), block.fit->x, block.fit->y);
+			SendOutputMessage(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name.c_str(), block.fit->x, block.fit->y, block.fit->w, block.fit->h);
 
-        Panel* newPanel = new Panel;
-        newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
-        newPanel->height = block.fit->h;
-        newPanel->width = block.fit->w;
-        newPanel->thickness = thickness + 5;
-        newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
+			Panel* newPanel = new Panel;
+			newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
+			newPanel->height = block.fit->h;
+			newPanel->width = block.fit->w;
+			newPanel->thickness = thickness + 5;
+			newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
 
-        // Add the panel to the panel list
-        panelList.push_back(*newPanel);
+			panelList.push_back(*newPanel);
+		}
+		else
+			SendOutputMessage(_T("Il pezzo %S non è stato allocato (spazio insufficiente)"), block.name.c_str());
     }
 
 }
@@ -99,8 +103,9 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
 	if (InitOCC()) {
-		std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
-		simulationThread.detach();
+		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
+		//simulationThread.detach();
+		StartSimulation();
 	}
 
 	return TRUE;
