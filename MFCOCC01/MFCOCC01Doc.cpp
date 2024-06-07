@@ -67,9 +67,9 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-				Node("Pannello2", 30.0, 5.0),
-        Node("Pannello1", 25.0, 35.0),
-		Node("Pannello3", 5.0, 5.0)
+        Node("Pannello1", 5.0, 5.0),
+        Node("Pannello2", 10.0, 10.0),
+		Node("Pannello3", 100.0, 155.0)
     };
 
     packer.fit(blocks);
