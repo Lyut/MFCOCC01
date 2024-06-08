@@ -453,6 +453,6 @@ void CMainFrame::OnOptimize()
 {
 	COptiDiag cOptiDiag;
 	cOptiDiag.DoModal();
-	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
-	pDoc->StartSimulation();
+	//CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	//pDoc->StartSimulation();
 }

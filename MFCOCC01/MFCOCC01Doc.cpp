@@ -67,9 +67,9 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-        Node("Pannello1", 5.0, 5.0),
-        Node("Pannello2", 10.0, 10.0),
-		Node("Pannello3", 100.0, 155.0)
+        Node("Pannello1", 50.0, 55.0),
+        Node("Pannello2", 20.0, 20.0),
+		Node("Pannello3", 10.0, 15.0)
     };
 
     packer.fit(blocks);
@@ -101,10 +101,9 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
-	if (InitOCC()) {
+	InitOCC();
 		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
 		//simulationThread.detach();
-	}
 
 	return TRUE;
 }

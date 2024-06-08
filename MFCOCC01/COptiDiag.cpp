@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "MFCOCC01.h"
+#include "MFCOCC01Doc.h"
 #include "COptiDiag.h"
 #include "afxdialogex.h"
 
@@ -14,7 +15,8 @@ IMPLEMENT_DYNAMIC(COptiDiag, CDialogEx)
 COptiDiag::COptiDiag(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_OPTIDIAG, pParent)
 {
-
+	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	pDoc->StartSimulation();
 }
 
 COptiDiag::~COptiDiag()
