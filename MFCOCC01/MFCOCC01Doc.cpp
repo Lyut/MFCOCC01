@@ -31,7 +31,7 @@ END_MESSAGE_MAP()
 CMFCOCC01Doc::CMFCOCC01Doc() noexcept
 {
 	// TODO: aggiungere qui il codice di costruzione unico
-
+	m_bAutoDelete = FALSE;
 }
 
 CMFCOCC01Doc::~CMFCOCC01Doc()
@@ -67,7 +67,7 @@ void CMFCOCC01Doc::StartSimulation() {
     std::uniform_int_distribution<int> dis(1, 508);
 
     std::vector<Node> blocks = {
-        Node("Pannello1", 200.0, 200.0),
+        Node("Pannello1", 20.0, 20.0),
 		Node("Pannello1", 15.0, 15.0),
 		Node("Pannello1", 10.0, 10.0),
 		//Node("Pannello2", 10.0, 10.0),
@@ -102,10 +102,12 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
+	COptiDialog optiDialog;
 	if (InitOCC()) {
 		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
 		//simulationThread.detach();
-		StartSimulation();
+		//StartSimulation();
+		optiDialog.DoModal();
 	}
 
 	return TRUE;
@@ -194,7 +196,6 @@ void CMFCOCC01Doc::Dump(CDumpContext& dc) const
 }
 #endif //_DEBUG
 
-
 // Comandi di CMFCOCC01Doc
 
 void CMFCOCC01Doc::SendOutputMessage(LPCTSTR str, ...) {
@@ -225,4 +226,21 @@ void CMFCOCC01Doc::SendInsertItem(LPCTSTR str, ...) {
 		pMainFrame->SendMessage(WM_INSERTITEM_MESSAGE, 0, (LPARAM)pData);
 	}
 	delete pData;
+}
+
+CMFCOCC01Doc* CMFCOCC01Doc::GetDocument() {
+	CMDIChildWnd* pChild =
+		((CMDIFrameWnd*)(AfxGetApp()->m_pMainWnd))->MDIGetActive();
+	if (!pChild)
+		return NULL;
+
+	CDocument* pDoc = pChild->GetActiveDocument();
+	if (!pDoc)
+		return NULL;
+
+	// Check if the document is of the correct type
+	if (!pDoc->IsKindOf(RUNTIME_CLASS(CMFCOCC01Doc)))
+		return NULL;
+
+	return (CMFCOCC01Doc*)pDoc;
 }

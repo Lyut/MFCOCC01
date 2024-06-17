@@ -11,6 +11,7 @@
 #include <set>
 #include <tuple>
 
+#include "COptiDialog.h"
 #include "Node.h"
 #include "Packer.h"
 
@@ -28,6 +29,7 @@ public:
 	Handle(AIS_InteractiveContext) GetAISContext() { return m_hAISContext; }
 	std::list<Panel>& GetPanelList() { return panelList; }
 	CMainFrame* GetMainFrame() { return dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd()); };
+	static CMFCOCC01Doc* GetDocument();
 // Operazioni
 public:
 	BOOL InitOCC();

@@ -7,7 +7,7 @@
 #ifndef PCH_H
 #define PCH_H
 
-//#define USE_IMGUI
+#define USE_IMGUI
 
 #define GLFW_INCLUDE_GLU
 

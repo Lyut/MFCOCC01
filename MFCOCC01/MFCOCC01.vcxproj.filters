@@ -90,6 +90,9 @@
     <ClInclude Include="Packer.h">
       <Filter>File di intestazione\opticore</Filter>
     </ClInclude>
+    <ClInclude Include="COptiDialog.h">
+      <Filter>File di intestazione</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCOCC01.cpp">
@@ -148,6 +151,9 @@
     </ClCompile>
     <ClCompile Include="Packer.cpp">
       <Filter>File di origine\opticore</Filter>
+    </ClCompile>
+    <ClCompile Include="COptiDialog.cpp">
+      <Filter>File di origine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
