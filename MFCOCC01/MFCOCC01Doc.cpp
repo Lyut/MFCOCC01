@@ -23,6 +23,7 @@
 IMPLEMENT_DYNCREATE(CMFCOCC01Doc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMFCOCC01Doc, CDocument)
+	ON_COMMAND(ID_OTTIMIZZAZIONE_INIZIASIMULAZIONE, &CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione)
 END_MESSAGE_MAP()
 
 
@@ -68,9 +69,8 @@ void CMFCOCC01Doc::StartSimulation() {
 
     std::vector<Node> blocks = {
         Node("Pannello1", 20.0, 20.0),
-		Node("Pannello1", 15.0, 15.0),
-		Node("Pannello1", 10.0, 10.0),
-		//Node("Pannello2", 10.0, 10.0),
+		Node("Pannello2", 15.0, 15.0),
+		Node("Pannello3", 10.0, 10.0),
     };
 
     packer.fit(blocks);
@@ -102,13 +102,7 @@ BOOL CMFCOCC01Doc::OnNewDocument()
 
 	// TODO: aggiungere qui il codice di reinizializzazione
 	// (nei documenti SDI verrà riutilizzato questo documento).
-	COptiDialog optiDialog;
-	if (InitOCC()) {
-		//std::thread simulationThread(&CMFCOCC01Doc::StartSimulation, this);
-		//simulationThread.detach();
-		//StartSimulation();
-		optiDialog.DoModal();
-	}
+	InitOCC();
 
 	return TRUE;
 }
@@ -243,4 +237,10 @@ CMFCOCC01Doc* CMFCOCC01Doc::GetDocument() {
 		return NULL;
 
 	return (CMFCOCC01Doc*)pDoc;
+}
+
+void CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione()
+{
+	COptiDialog optiDialog;
+	optiDialog.DoModal();
 }

@@ -69,4 +69,6 @@ private:
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
 	CMainFrame* pMainFrame;
+public:
+	afx_msg void OnOttimizzazioneIniziasimulazione();
 };
