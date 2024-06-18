@@ -65,7 +65,7 @@ protected:
 #endif // SHARED_HANDLERS
 private:
 	std::list<Panel> panelList;
-	Packer packer = Packer(200.0, 200.0);
+	Packer packer = Packer(100.0, 100.0);
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
 	CMainFrame* pMainFrame;

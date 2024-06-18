@@ -79,7 +79,6 @@ void CMFCOCC01Doc::StartSimulation() {
 		if (block.fit != nullptr) {
 			SendInsertItem(_T("%S (%f, %f)"), block.name.c_str(), block.fit->x, block.fit->y);
 			SendOutputMessage(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name.c_str(), block.fit->x, block.fit->y, block.fit->w, block.fit->h);
-
 			Panel* newPanel = new Panel;
 			newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
 			newPanel->height = block.fit->h;
@@ -87,10 +86,11 @@ void CMFCOCC01Doc::StartSimulation() {
 			newPanel->thickness = thickness + 5;
 			newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
 
+			// Add the panel to the panel list
 			panelList.push_back(*newPanel);
 		}
 		else
-			SendOutputMessage(_T("Il pezzo %S non è stato allocato (spazio insufficiente)"), block.name.c_str());
+			SendOutputMessage(_T("Non ho potuto allocare il pannello %S! (Spazio insufficiente)"), block.name.c_str());
     }
 
 }
