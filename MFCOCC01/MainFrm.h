@@ -59,7 +59,6 @@ protected:
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
 	afx_msg LRESULT OnOutputMsgMessage(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnInsertItemMessage(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnOptimize();
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();
