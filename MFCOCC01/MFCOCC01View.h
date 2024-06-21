@@ -20,7 +20,7 @@ protected: // creare solo da serializzazione.
 // Attributi
 public:
 	CMFCOCC01Doc* GetDocument() const;
-
+	Handle_V3d_View GetView() { return m_hView; }
 // Operazioni
 public:
 
@@ -41,7 +41,6 @@ protected:
 public:
 	virtual ~CMFCOCC01View();
 	void FitAll();
-	TopoDS_Shape ConvertAssimpToOpenCASCADE(const aiScene* scene);
 	void DisplayTextOnTopOfModel(const TCollection_AsciiString& text, const gp_Pnt& position);
 	gp_Pnt GetShapeCenter(const TopoDS_Shape& shape);
 #ifdef _DEBUG
@@ -73,9 +72,6 @@ private:
 	std::random_device rd;
 	Handle(AIS_Shape) m_selectedBox;
 	Quantity_Color m_originalColor;
-	Assimp::Importer m_importer;
-	const aiScene* scene;
-	TopoDS_Shape shape;
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp

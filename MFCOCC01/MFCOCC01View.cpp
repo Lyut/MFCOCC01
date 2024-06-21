@@ -61,40 +61,6 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 
 }
 
-TopoDS_Shape CMFCOCC01View::ConvertAssimpToOpenCASCADE(const aiScene* scene) {
-	BRep_Builder builder;
-	TopoDS_Compound compound;
-	builder.MakeCompound(compound);
-
-	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-		aiMesh* mesh = scene->mMeshes[i];
-
-		for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
-			aiFace& face = mesh->mFaces[j];
-
-			if (face.mNumIndices == 3) { // Assimp guarantees triangles with aiProcess_Triangulate
-				gp_Pnt p1(mesh->mVertices[face.mIndices[0]].x, mesh->mVertices[face.mIndices[0]].y, mesh->mVertices[face.mIndices[0]].z);
-				gp_Pnt p2(mesh->mVertices[face.mIndices[1]].x, mesh->mVertices[face.mIndices[1]].y, mesh->mVertices[face.mIndices[1]].z);
-				gp_Pnt p3(mesh->mVertices[face.mIndices[2]].x, mesh->mVertices[face.mIndices[2]].y, mesh->mVertices[face.mIndices[2]].z);
-
-				TopoDS_Vertex v1 = BRepBuilderAPI_MakeVertex(p1);
-				TopoDS_Vertex v2 = BRepBuilderAPI_MakeVertex(p2);
-				TopoDS_Vertex v3 = BRepBuilderAPI_MakeVertex(p3);
-
-				TopoDS_Edge e1 = BRepBuilderAPI_MakeEdge(v1, v2);
-				TopoDS_Edge e2 = BRepBuilderAPI_MakeEdge(v2, v3);
-				TopoDS_Edge e3 = BRepBuilderAPI_MakeEdge(v3, v1);
-
-				TopoDS_Wire wire = BRepBuilderAPI_MakeWire(e1, e2, e3);
-				TopoDS_Face face = BRepBuilderAPI_MakeFace(wire);
-
-				builder.Add(compound, face);
-			}
-		}
-	}
-	return compound;
-}
-
 gp_Pnt CMFCOCC01View::GetShapeCenter(const TopoDS_Shape& shape) {
 	Bnd_Box boundingBox;
 	BRepBndLib::Add(shape, boundingBox);
@@ -119,18 +85,19 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 
+	for (objList obj : GetDocument()->GetShapeList()) {
+		context->Display(obj.shape, Standard_True);
 
-	for (Panel& panel : pDoc->GetPanelList()) {
-		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);
-		TopoDS_Shape Box = mkBox.Shape();
-		Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
-		Quantity_Color color(panel.color);
-		myAISBox->SetColor(color);
+		gp_Pnt shapeCenter = GetShapeCenter(obj.topo_shape);
+		shapeCenter.SetZ(shapeCenter.Z() + 100);
+		Handle(AIS_TextLabel) aTextLabel = new AIS_TextLabel();
+		aTextLabel->SetText(TCollection_ExtendedString(obj.name));
+		aTextLabel->SetPosition(shapeCenter);
+		Quantity_Color textColor(Quantity_NOC_BLACK);
+		aTextLabel->SetColor(textColor);
+		aTextLabel->SetFont("RomanS");
 
-		GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
-
-		panel.shape = myAISBox;
-		panel.originalColor = panel.color;
+		context->Display(aTextLabel, Standard_True);
 	}
 
 	if (!m_selectedBox.IsNull())
@@ -271,7 +238,7 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 			// Restore the original color of the previously selected panel
 			if (!m_selectedBox.IsNull())
 			{
-				for (Panel& panel : GetDocument()->GetPanelList())
+				/*for (Panel& panel : GetDocument()->GetPanelList())
 				{
 					if (panel.shape == m_selectedBox)
 					{
@@ -279,14 +246,14 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 						context->Redisplay(m_selectedBox, true);
 						break;
 					}
-				}
+				} */
 			}
 
 			// Update m_selectedBox and set the new selection color
 			m_selectedBox = detectedShape;
 
 			// Find the corresponding panel for the newly selected box and update its color
-			for (Panel& panel : GetDocument()->GetPanelList())
+			/*for (Panel& panel : GetDocument()->GetPanelList())
 			{
 				if (panel.shape == m_selectedBox)
 				{
@@ -294,7 +261,7 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 					m_selectedBox->SetColor(Quantity_NOC_RED);
 					break;
 				}
-			}
+			} */
 
 			context->Redisplay(m_selectedBox, true);
 		}

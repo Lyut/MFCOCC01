@@ -27,13 +27,16 @@ protected: // creare solo da serializzazione.
 public:
 	Handle(V3d_Viewer) GetViewer() { return m_hViewer; }
 	Handle(AIS_InteractiveContext) GetAISContext() { return m_hAISContext; }
-	std::list<Panel>& GetPanelList() { return panelList; }
+	Assimp::Importer& GetAssimp() { return m_importer; }
 	CMainFrame* GetMainFrame() { return dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd()); };
 	static CMFCOCC01Doc* GetDocument();
+	TopoDS_Shape ConvertAssimpToOpenCASCADE(const aiScene* scene);
+	std::list<objList>& GetShapeList() { return m_shapeList; }
 // Operazioni
 public:
 	BOOL InitOCC();
 	void StartSimulation();
+
 	void SendOutputMessage(LPCTSTR str, ...);
 	void SendInsertItem(LPCTSTR str, ...);
 // Sostituzioni
@@ -64,11 +67,11 @@ protected:
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
 private:
-	std::list<Panel> panelList;
-	Packer packer = Packer(100.0, 100.0);
+	CMainFrame* pMainFrame;
+	std::list<objList> m_shapeList;
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
-	CMainFrame* pMainFrame;
+	Assimp::Importer m_importer;
 public:
 	afx_msg void OnOttimizzazioneIniziasimulazione();
 };

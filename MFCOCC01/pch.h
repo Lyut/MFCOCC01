@@ -71,7 +71,7 @@
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
 
-#define DIR_CATALOGUE "C:\\merda"
+#define DIR_CATALOGUE "C:\\merda\\"
 
 struct Panel {
 	gp_Pnt origin;
@@ -81,6 +81,14 @@ struct Panel {
 	Quantity_Color color;
     Quantity_Color originalColor;
     Handle(AIS_Shape) shape;
+};
+
+struct objList {
+	Handle(AIS_Shape) shape;
+	TopoDS_Shape topo_shape;
+	CString name;
+	gp_Pnt origin;
+	Quantity_Color color;
 };
 
 /**************************************************************************************/

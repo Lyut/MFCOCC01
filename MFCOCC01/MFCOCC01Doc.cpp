@@ -63,36 +63,46 @@ BOOL CMFCOCC01Doc::InitOCC()
 
 void CMFCOCC01Doc::StartSimulation() {
     CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(1, 508);
 
-    std::vector<Node> blocks = {
-        Node("Pannello1", 20.0, 20.0),
-		Node("Pannello2", 15.0, 15.0),
-		Node("Pannello3", 10.0, 10.0),
-    };
+}
 
-    packer.fit(blocks);
-	int thickness = 2;
-    for (const auto& block : blocks) {
-		if (block.fit != nullptr) {
-			SendInsertItem(_T("%S (%f, %f)"), block.name.c_str(), block.fit->x, block.fit->y);
-			SendOutputMessage(_T("Creato pannello %S (x: %f, y: %f) (W: %f H: %f)"), block.name.c_str(), block.fit->x, block.fit->y, block.fit->w, block.fit->h);
-			Panel* newPanel = new Panel;
-			newPanel->origin = gp_Pnt(block.fit->x, block.fit->y, 0);
-			newPanel->height = block.fit->h;
-			newPanel->width = block.fit->w;
-			newPanel->thickness = thickness + 5;
-			newPanel->color = static_cast<Quantity_NameOfColor>(dis(gen));
 
-			// Add the panel to the panel list
-			panelList.push_back(*newPanel);
+TopoDS_Shape CMFCOCC01Doc::ConvertAssimpToOpenCASCADE(const aiScene* scene) {
+	BRep_Builder builder;
+	TopoDS_Compound compound;
+	builder.MakeCompound(compound);
+
+	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+		aiMesh* mesh = scene->mMeshes[i];
+
+		CString str;
+		str.Format(_T("Conversione... (%i mesh, %i facce)"), scene->mNumMeshes, mesh->mNumFaces);
+		SendOutputMessage(str);
+
+		for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
+			aiFace& face = mesh->mFaces[j];
+
+			if (face.mNumIndices == 3) { // Assimp guarantees triangles with aiProcess_Triangulate
+				gp_Pnt p1(mesh->mVertices[face.mIndices[0]].x, mesh->mVertices[face.mIndices[0]].y, mesh->mVertices[face.mIndices[0]].z);
+				gp_Pnt p2(mesh->mVertices[face.mIndices[1]].x, mesh->mVertices[face.mIndices[1]].y, mesh->mVertices[face.mIndices[1]].z);
+				gp_Pnt p3(mesh->mVertices[face.mIndices[2]].x, mesh->mVertices[face.mIndices[2]].y, mesh->mVertices[face.mIndices[2]].z);
+
+				TopoDS_Vertex v1 = BRepBuilderAPI_MakeVertex(p1);
+				TopoDS_Vertex v2 = BRepBuilderAPI_MakeVertex(p2);
+				TopoDS_Vertex v3 = BRepBuilderAPI_MakeVertex(p3);
+
+				TopoDS_Edge e1 = BRepBuilderAPI_MakeEdge(v1, v2);
+				TopoDS_Edge e2 = BRepBuilderAPI_MakeEdge(v2, v3);
+				TopoDS_Edge e3 = BRepBuilderAPI_MakeEdge(v3, v1);
+
+				TopoDS_Wire wire = BRepBuilderAPI_MakeWire(e1, e2, e3);
+				TopoDS_Face face = BRepBuilderAPI_MakeFace(wire);
+
+				builder.Add(compound, face);
+			}
 		}
-		else
-			SendOutputMessage(_T("Non ho potuto allocare il pannello %S! (Spazio insufficiente)"), block.name.c_str());
-    }
-
+	}
+	return compound;
 }
 
 BOOL CMFCOCC01Doc::OnNewDocument()

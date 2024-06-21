@@ -5,6 +5,7 @@
 #include "ClassView.h"
 #include "Resource.h"
 #include "MFCOCC01.h"
+#include "MFCOCC01Doc.h"
 
 class CClassViewMenuButton : public CMFCToolBarMenuButton
 {
@@ -59,6 +60,7 @@ BEGIN_MESSAGE_MAP(CClassView, CDockablePane)
 	ON_WM_SETFOCUS()
 	ON_COMMAND_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnSort)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnUpdateSort)
+	ON_NOTIFY(NM_DBLCLK, 2, OnTreeClick)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -73,8 +75,7 @@ int CClassView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rectDummy.SetRectEmpty();
 
 	// Creare visualizzazioni:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-
+	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_SHOWSELALWAYS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 	if (!m_wndClassView.Create(dwViewStyle, rectDummy, this, 2))
 	{
 		TRACE0("Non è stato possibile creare la Visualizzazione classi.\n");
@@ -114,6 +115,42 @@ int CClassView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	FillClassView();
 
 	return 0;
+}
+
+afx_msg void CClassView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	if (pNMHDR && pNMHDR->code == NM_DBLCLK && pNMHDR->hwndFrom == m_wndClassView.m_hWnd)
+	{
+		HTREEITEM hItem = m_wndClassView.GetSelectedItem();
+		if (hItem)
+		{
+			CString dirCatalogue = _T(DIR_CATALOGUE);
+			CString s = dirCatalogue + m_wndClassView.GetItemText(hItem);
+			CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+			if (pDoc)
+				pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
+				const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+				CString str;
+				str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
+				pDoc->SendOutputMessage(str);
+				if (!scene) {
+					CString errorMsg = _T("Failed to load model: ");
+					errorMsg += pDoc->GetAssimp().GetErrorString();
+					AfxMessageBox(errorMsg);
+					return;
+				}
+				pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
+				TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
+				Handle(AIS_Shape) aShape = new AIS_Shape(shape);
+				objList objEntry;
+				objEntry.name = m_wndClassView.GetItemText(hItem);
+				objEntry.shape = aShape;
+				objEntry.topo_shape = shape;
+				pDoc->GetShapeList().push_back(objEntry);
+				pDoc->SendOutputMessage(_T("Conversione finita!"));
+		}
+	}
+	*pResult = 0;
 }
 
 void CClassView::OnSize(UINT nType, int cx, int cy)
