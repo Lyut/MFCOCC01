@@ -7,7 +7,7 @@
 #ifndef PCH_H
 #define PCH_H
 
-#define USE_IMGUI
+//#define USE_IMGUI
 
 #define GLFW_INCLUDE_GLU
 
@@ -70,6 +70,8 @@
 
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
+
+#define DIR_CATALOGUE "C:\\merda"
 
 struct Panel {
 	gp_Pnt origin;

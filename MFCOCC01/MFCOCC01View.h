@@ -74,6 +74,8 @@ private:
 	Handle(AIS_Shape) m_selectedBox;
 	Quantity_Color m_originalColor;
 	Assimp::Importer m_importer;
+	const aiScene* scene;
+	TopoDS_Shape shape;
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp

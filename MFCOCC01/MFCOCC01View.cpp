@@ -118,42 +118,7 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
-	context->SetDisplayMode(AIS_Shaded, true);
 
-	//BRepPrimAPI_MakeBox mkBox(gp_Pnt(0, 0, 0), 200.0, 200.0, 2.0);
-	//TopoDS_Shape Box = mkBox.Shape();
-	//Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
-
-	//GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
-
-	const aiScene* scene = m_importer.ReadFile("C:\\EL_CF_002487_01.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
-	if (!scene) {
-		CString errorMsg = _T("Failed to load model: ");
-		errorMsg += m_importer.GetErrorString();
-		AfxMessageBox(errorMsg);
-		return;
-	}
-	TopoDS_Shape shape = ConvertAssimpToOpenCASCADE(scene);
-	Handle(AIS_Shape) aShape = new AIS_Shape(shape);
-	context->Display(aShape, Standard_True);
-
-	gp_Pnt shapeCenter = GetShapeCenter(shape);
-	shapeCenter.SetZ(shapeCenter.Z() + 670);
-	Handle(AIS_TextLabel) aTextLabel = new AIS_TextLabel();
-	aTextLabel->SetText("EL_CF_002487_01");
-	aTextLabel->SetPosition(shapeCenter);
-	Quantity_Color textColor(Quantity_NOC_RED);
-	//aTextLabel->Color(textColor);
-	aTextLabel->SetColor(textColor);
-	aTextLabel->SetFont("Comic Sans MS");
-	aTextLabel->SetDisplayType(Aspect_TypeOfDisplayText::Aspect_TODT_DEKALE);
-	//aTextLabel->SetZoomable(Standard_True);
-
-	// Set text display properties
-	//Handle(Prs3d_TextAspect) aTextAspect = new Prs3d_TextAspect();
-	//aTextAspect->SetColor(Quantity_NOC_WHITE);
-	// Display the text label in the context
-	context->Display(aTextLabel, Standard_True);
 
 	for (Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);
@@ -539,7 +504,7 @@ void CMFCOCC01View::renderGui()
 	ImGui::ShowMetricsWindow();
 	//ImGui::ShowDemoWindow();
 
-	ImGui::Begin("LUDOCUT MFCOCC01 DEBUG");
+	ImGui::Begin("Lutron 0.0.6 Build " __DATE__ " " __TIME__);
 	ImGui::Text("Menù debug");
 	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 	if (ImGui::TreeNode("Pannelli/tagli"))

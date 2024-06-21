@@ -164,14 +164,14 @@ void CPropertiesWnd::InitPropList()
 	m_wndPropList.SetVSDotNetLook();
 	m_wndPropList.MarkModifiedProperties();
 
-	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(L"Quantità pezzi", COleVariant((short)0));
+	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(L"Grafica", COleVariant((short)0));
 	pProp->AllowEdit(false);
 	m_wndPropList.AddProperty(pProp);
 
 	// Add more properties similarly
-	pProp = new CMFCPropertyGridProperty(L"Quantità scarti", COleVariant((short)0));
-	pProp->AllowEdit(false);
-	m_wndPropList.AddProperty(pProp);
+	//pProp = new CMFCPropertyGridProperty(L"Quantità scarti", COleVariant((short)0));
+	//pProp->AllowEdit(false);
+	//m_wndPropList.AddProperty(pProp);
 
 }
 

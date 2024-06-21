@@ -3,6 +3,12 @@
 
 #include "ViewTree.h"
 
+#include <iostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+
 class CClassToolBar : public CMFCToolBar
 {
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
