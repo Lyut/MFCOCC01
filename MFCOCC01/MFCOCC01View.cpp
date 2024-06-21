@@ -60,6 +60,52 @@ BOOL CMFCOCC01View::PreCreateWindow(CREATESTRUCT& cs)
 	return CView::PreCreateWindow(cs);
 
 }
+
+TopoDS_Shape CMFCOCC01View::ConvertAssimpToOpenCASCADE(const aiScene* scene) {
+	BRep_Builder builder;
+	TopoDS_Compound compound;
+	builder.MakeCompound(compound);
+
+	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+		aiMesh* mesh = scene->mMeshes[i];
+
+		for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
+			aiFace& face = mesh->mFaces[j];
+
+			if (face.mNumIndices == 3) { // Assimp guarantees triangles with aiProcess_Triangulate
+				gp_Pnt p1(mesh->mVertices[face.mIndices[0]].x, mesh->mVertices[face.mIndices[0]].y, mesh->mVertices[face.mIndices[0]].z);
+				gp_Pnt p2(mesh->mVertices[face.mIndices[1]].x, mesh->mVertices[face.mIndices[1]].y, mesh->mVertices[face.mIndices[1]].z);
+				gp_Pnt p3(mesh->mVertices[face.mIndices[2]].x, mesh->mVertices[face.mIndices[2]].y, mesh->mVertices[face.mIndices[2]].z);
+
+				TopoDS_Vertex v1 = BRepBuilderAPI_MakeVertex(p1);
+				TopoDS_Vertex v2 = BRepBuilderAPI_MakeVertex(p2);
+				TopoDS_Vertex v3 = BRepBuilderAPI_MakeVertex(p3);
+
+				TopoDS_Edge e1 = BRepBuilderAPI_MakeEdge(v1, v2);
+				TopoDS_Edge e2 = BRepBuilderAPI_MakeEdge(v2, v3);
+				TopoDS_Edge e3 = BRepBuilderAPI_MakeEdge(v3, v1);
+
+				TopoDS_Wire wire = BRepBuilderAPI_MakeWire(e1, e2, e3);
+				TopoDS_Face face = BRepBuilderAPI_MakeFace(wire);
+
+				builder.Add(compound, face);
+			}
+		}
+	}
+	return compound;
+}
+
+gp_Pnt CMFCOCC01View::GetShapeCenter(const TopoDS_Shape& shape) {
+	Bnd_Box boundingBox;
+	BRepBndLib::Add(shape, boundingBox);
+
+	Standard_Real xmin, ymin, zmin, xmax, ymax, zmax;
+	boundingBox.Get(xmin, ymin, zmin, xmax, ymax, zmax);
+
+	gp_Pnt center((xmin + xmax) / 2, (ymin + ymax) / 2, (zmin + zmax) / 2);
+	return center;
+}
+
 // Disegno di CMFCOCC01View
 void CMFCOCC01View::OnDraw(CDC* pDC)
 {
@@ -79,6 +125,35 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	//Handle(AIS_Shape) myAISBox = new AIS_Shape(Box);
 
 	//GetDocument()->GetAISContext()->Display(myAISBox, Standard_True);
+
+	const aiScene* scene = m_importer.ReadFile("C:\\EL_CF_002487_01.obj", aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+	if (!scene) {
+		CString errorMsg = _T("Failed to load model: ");
+		errorMsg += m_importer.GetErrorString();
+		AfxMessageBox(errorMsg);
+		return;
+	}
+	TopoDS_Shape shape = ConvertAssimpToOpenCASCADE(scene);
+	Handle(AIS_Shape) aShape = new AIS_Shape(shape);
+	context->Display(aShape, Standard_True);
+
+	gp_Pnt shapeCenter = GetShapeCenter(shape);
+	shapeCenter.SetZ(shapeCenter.Z() + 670);
+	Handle(AIS_TextLabel) aTextLabel = new AIS_TextLabel();
+	aTextLabel->SetText("EL_CF_002487_01");
+	aTextLabel->SetPosition(shapeCenter);
+	Quantity_Color textColor(Quantity_NOC_RED);
+	//aTextLabel->Color(textColor);
+	aTextLabel->SetColor(textColor);
+	aTextLabel->SetFont("Comic Sans MS");
+	aTextLabel->SetDisplayType(Aspect_TypeOfDisplayText::Aspect_TODT_DEKALE);
+	//aTextLabel->SetZoomable(Standard_True);
+
+	// Set text display properties
+	//Handle(Prs3d_TextAspect) aTextAspect = new Prs3d_TextAspect();
+	//aTextAspect->SetColor(Quantity_NOC_WHITE);
+	// Display the text label in the context
+	context->Display(aTextLabel, Standard_True);
 
 	for (Panel& panel : pDoc->GetPanelList()) {
 		BRepPrimAPI_MakeBox mkBox(panel.origin, panel.width, panel.height, panel.thickness);

@@ -21,6 +21,7 @@ public:
 public:
 	COutputWnd& GetOutputWnd() { return m_wndOutput; }
 	CClassView& GetClassView() { return m_wndClassView; }
+	//Assimp::Importer& GetAssImp() { return m_importer; }
 
 // Operazioni
 public:
@@ -47,6 +48,7 @@ protected:  // membri incorporati della barra di controllo
 	CClassView        m_wndClassView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
+	//Assimp::Importer  m_importer;
 
 // Funzioni generate per la mappa dei messaggi
 protected:

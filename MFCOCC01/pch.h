@@ -43,12 +43,30 @@
 #include <GeomAPI_IntCS.hxx>
 #include <list>
 #include <thread>
+
+#include <AIS_TextLabel.hxx>
+#include <Graphic3d_AspectText3d.hxx>
+#include <Prs3d_Text.hxx>
+#include <Prs3d_TextAspect.hxx>
+#include <Bnd_Box.hxx>
+#include <gp_Pnt.hxx>
+#include <STEPControl_Reader.hxx>
+
 //#include <GLFW/glfw3.h>
 //#include <GLFW/glfw3native.h>
 #include <Aspect_Window.hxx>
 #include <Aspect_DisplayConnection.hxx>
 #include <Aspect_RenderingContext.hxx>
 #include <cstdarg> 
+#include <Font_FontAspect.hxx>
+/* ASSIMP */
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <BRepBuilderAPI_MakeVertex.hxx>
+#include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRepBuilderAPI_MakeFace.hxx>
+#include <TopoDS_Compound.hxx>
 
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
