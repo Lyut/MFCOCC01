@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(CMFCOCC01View, CView)
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
 	ON_MESSAGE(WM_REDRAW_VIEW, &CMFCOCC01View::OnRedrawView)
+	ON_MESSAGE(WM_DETECT_COLLISION, &CMFCOCC01View::DetectCollision)
 END_MESSAGE_MAP()
 
 // Costruzione/distruzione di CMFCOCC01View
@@ -230,6 +231,18 @@ void CMFCOCC01View::OnLButtonUp(UINT /* nFlags */, CPoint point)
 		Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 		context->UpdateCurrentViewer();
 	}
+}
+
+LRESULT CMFCOCC01View::DetectCollision(WPARAM wParam, LPARAM lParam)
+{
+	if (!m_selectedBox.IsNull())
+	{
+		CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+		if (pDoc)
+			pDoc->SetSelectedShape(m_selectedBox);
+	}
+
+	return 0;
 }
 
 void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)

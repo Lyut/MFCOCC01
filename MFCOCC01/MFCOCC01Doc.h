@@ -32,6 +32,8 @@ public:
 	static CMFCOCC01Doc* GetDocument();
 	TopoDS_Shape ConvertAssimpToOpenCASCADE(const aiScene* scene);
 	std::list<objList>& GetShapeList() { return m_shapeList; }
+	Handle(AIS_Shape) GetSelectedShape() { return m_selectedShape; }
+	void SetSelectedShape(Handle(AIS_Shape) shape) { m_selectedShape = shape; }
 // Operazioni
 public:
 	BOOL InitOCC();
@@ -72,6 +74,8 @@ private:
 	Handle(V3d_Viewer) m_hViewer;
 	Handle(AIS_InteractiveContext) m_hAISContext;
 	Assimp::Importer m_importer;
+	Handle(AIS_Shape) m_selectedShape;
 public:
 	afx_msg void OnOttimizzazioneIniziasimulazione();
+	afx_msg void OnContextClickedMove();
 };

@@ -12,6 +12,8 @@
 
 #include "MFCOCC01Doc.h"
 
+#include "MFCOCC01View.h"
+
 #include <propkey.h>
 
 #ifdef _DEBUG
@@ -24,6 +26,7 @@ IMPLEMENT_DYNCREATE(CMFCOCC01Doc, CDocument)
 
 BEGIN_MESSAGE_MAP(CMFCOCC01Doc, CDocument)
 	ON_COMMAND(ID_OTTIMIZZAZIONE_INIZIASIMULAZIONE, &CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione)
+	ON_COMMAND(ID_MODIFICA_MUOVI, &CMFCOCC01Doc::OnContextClickedMove)
 END_MESSAGE_MAP()
 
 
@@ -253,4 +256,35 @@ void CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione()
 {
 	COptiDialog optiDialog;
 	optiDialog.DoModal();
+}
+
+
+void CMFCOCC01Doc::OnContextClickedMove()
+{
+	SendOutputMessage(_T("Chiamata!"));
+	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	if (pDoc) {
+		CMainFrame* pFrame = pDoc->GetMainFrame();
+		if (pFrame != nullptr)
+		{
+			CMFCOCC01View* pMFCView = nullptr;
+			POSITION pos = pDoc->GetFirstViewPosition();
+			while (pos != nullptr)
+			{
+				CView* pView = pDoc->GetNextView(pos);
+				if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+				{
+					pMFCView = (CMFCOCC01View*)pView;
+				}
+			}
+			if (pMFCView != nullptr)
+			{
+				pMFCView->SendMessage(WM_DETECT_COLLISION);
+				if (!pDoc->GetSelectedShape().IsNull())
+				{
+					pDoc->SendOutputMessage(_T("not null"));
+				}
+			}
+		}
+	}
 }
