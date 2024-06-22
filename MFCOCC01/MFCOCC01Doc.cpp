@@ -283,6 +283,7 @@ void CMFCOCC01Doc::OnContextClickedMove()
 				if (!pDoc->GetSelectedShape().IsNull())
 				{
 					pDoc->SendOutputMessage(_T("not null"));
+					pDoc->GetSelectedShape()->SetTransparency(0.5);
 				}
 			}
 		}
