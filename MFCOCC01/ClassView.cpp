@@ -154,9 +154,24 @@ afx_msg void CClassView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
 				objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
 				pDoc->GetShapeList().push_back(objEntry);
 				pDoc->SendOutputMessage(_T("Conversione finita!"));
-				Handle(V3d_Viewer) viewer = pDoc->GetViewer();
-				viewer->Invalidate();
-				viewer->Redraw();
+				CMainFrame* pFrame = pDoc->GetMainFrame();
+				if (pFrame != nullptr)
+				{
+					CMFCOCC01View* pMFCView = nullptr;
+					POSITION pos = pDoc->GetFirstViewPosition();
+					while (pos != nullptr)
+					{
+						CView* pView = pDoc->GetNextView(pos);
+						if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+						{
+							pMFCView = (CMFCOCC01View*)pView;
+						}
+					}
+					if (pMFCView != nullptr)
+					{
+						pMFCView->SendMessage(WM_REDRAW_VIEW);
+					}
+				}
 		}
 	}
 	*pResult = 0;

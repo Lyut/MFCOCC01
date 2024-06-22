@@ -37,6 +37,7 @@ BEGIN_MESSAGE_MAP(CMFCOCC01View, CView)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
+	ON_MESSAGE(WM_REDRAW_VIEW, &CMFCOCC01View::OnRedrawView)
 END_MESSAGE_MAP()
 
 // Costruzione/distruzione di CMFCOCC01View
@@ -70,19 +71,15 @@ gp_Pnt CMFCOCC01View::GetShapeCenter(const TopoDS_Shape& shape) {
 	return center;
 }
 
-// Disegno di CMFCOCC01View
-void CMFCOCC01View::OnDraw(CDC* pDC)
+LRESULT CMFCOCC01View::OnRedrawView(WPARAM wParam, LPARAM lParam)
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	CMFCOCC01Doc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
-		return;
-
-	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		return 0;
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
-
+	context->UpdateCurrentViewer();
 	for (objList obj : GetDocument()->GetShapeList()) {
 		Quantity_Color textColor(Quantity_NOC_BLACK);
 		Quantity_Color color(obj.color);
@@ -102,6 +99,21 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 
 		context->Display(aTextLabel, Standard_True);
 	}
+	return 0;
+}
+
+// Disegno di CMFCOCC01View
+void CMFCOCC01View::OnDraw(CDC* pDC)
+{
+	CMFCOCC01Doc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	if (!pDoc)
+		return;
+
+	CMainFrame* pMainFrame = dynamic_cast<CMainFrame*>(AfxGetApp()->GetMainWnd());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 
 	if (!m_selectedBox.IsNull())
 	{

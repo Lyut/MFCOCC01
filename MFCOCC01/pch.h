@@ -70,6 +70,7 @@
 
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
+#define WM_REDRAW_VIEW WM_USER + 3
 
 #define DIR_CATALOGUE "C:\\merda\\"
 

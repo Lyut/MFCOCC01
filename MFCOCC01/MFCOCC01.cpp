@@ -118,7 +118,7 @@ BOOL CMFCOCC01App::InitInstance()
 	// Modificare la chiave del Registro di sistema in cui sono memorizzate le impostazioni
 	// TODO: è necessario modificare questa stringa in modo appropriato,
 	// inserendo ad esempio il nome della società o dell'organizzazione.
-	SetRegistryKey(_T("Applicazioni locali generate tramite la Creazione guidata applicazioni"));
+	SetRegistryKey(_T("LOSYS Srl"));
 	LoadStdProfileSettings(4);  // Caricare le opzioni del file INI standard (inclusa MRU).
 
 
