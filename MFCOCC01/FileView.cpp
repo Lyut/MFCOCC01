@@ -6,6 +6,9 @@
 #include "Resource.h"
 #include "MFCOCC01.h"
 
+#include "MFCOCC01Doc.h"
+#include "MFCOCC01View.h"
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -36,6 +39,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
 	ON_WM_PAINT()
 	ON_WM_SETFOCUS()
+	ON_NOTIFY(NM_DBLCLK, 4, OnTreeClick)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -91,7 +95,33 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView()
 {
-	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("File FakeApp"), 0, 0);
+	fs::path directoryPath = DIR_CATALOGUE;
+
+	if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
+		AfxMessageBox(_T("Directory catalogo non esistente o comunque non valida!"));
+		HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Catalogo (offline)"), 0, 0);
+	}
+	else {
+		HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Catalogo (offline)"), 0, 0);
+		m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
+		// TODO: recurse
+		for (const auto& entry : fs::directory_iterator(directoryPath)) {
+			if (fs::is_directory(entry.path())) {
+				HTREEITEM hDir = m_wndFileView.InsertItem(entry.path().filename().c_str(), 0, 0, hRoot);
+				for (const auto& subentry : fs::directory_iterator(entry.path())) {
+					if (fs::is_regular_file(subentry.path())) {
+						m_wndFileView.InsertItem(subentry.path().filename().c_str(), 1, 1, hDir);
+					}
+				}
+			}
+			else if (fs::is_regular_file(entry.path())) {
+				m_wndFileView.InsertItem(entry.path().filename().c_str(), 1, 1, hRoot);
+			}
+		}
+		m_wndFileView.Expand(hRoot, TVE_EXPAND);
+	}
+
+	/*HTREEITEM hRoot = m_wndFileView.InsertItem(_T("File FakeApp"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 
 	HTREEITEM hSrc = m_wndFileView.InsertItem(_T("File di origine FakeApp"), 0, 0, hRoot);
@@ -121,7 +151,70 @@ void CFileView::FillFileView()
 
 	m_wndFileView.Expand(hRoot, TVE_EXPAND);
 	m_wndFileView.Expand(hSrc, TVE_EXPAND);
-	m_wndFileView.Expand(hInc, TVE_EXPAND);
+	m_wndFileView.Expand(hInc, TVE_EXPAND);*/
+}
+
+
+afx_msg void CFileView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	if (pNMHDR && pNMHDR->code == NM_DBLCLK && pNMHDR->hwndFrom == m_wndFileView.m_hWnd)
+	{
+		HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+		if (hItem)
+		{
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<int> dis(1, 508);
+			CString dirCatalogue = _T(DIR_CATALOGUE);
+			CString s = dirCatalogue + m_wndFileView.GetItemText(hItem);
+			CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+			if (pDoc)
+				pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
+			const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+			CString str;
+			str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
+			pDoc->SendOutputMessage(str);
+			if (!scene) {
+				CString errorMsg = _T("Failed to load model: ");
+				errorMsg += pDoc->GetAssimp().GetErrorString();
+				AfxMessageBox(errorMsg);
+				return;
+			}
+			pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
+			TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
+			Handle(AIS_Shape) aShape = new AIS_Shape(shape);
+			objList objEntry;
+			objEntry.name = m_wndFileView.GetItemText(hItem);
+			objEntry.shape = aShape;
+			objEntry.topo_shape = shape;
+			objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
+			pDoc->GetShapeList().push_back(objEntry);
+			pDoc->SendOutputMessage(_T("Conversione finita!"));
+			CMainFrame* pFrame = pDoc->GetMainFrame();
+			if (pFrame != nullptr)
+			{
+				CMFCOCC01View* pMFCView = nullptr;
+				POSITION pos = pDoc->GetFirstViewPosition();
+				while (pos != nullptr)
+				{
+					CView* pView = pDoc->GetNextView(pos);
+					if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+					{
+						pMFCView = (CMFCOCC01View*)pView;
+					}
+				}
+				if (pMFCView != nullptr)
+				{
+					pMFCView->SendMessage(WM_REDRAW_VIEW);
+				}
+			}
+		}
+	}
+	*pResult = 0;
+}
+
+void CFileView::InsertItem(LPCTSTR str) {
+	HTREEITEM hRoot = m_wndFileView.InsertItem(str, 0, 0);
+	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 }
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)

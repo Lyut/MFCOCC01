@@ -63,7 +63,6 @@ BEGIN_MESSAGE_MAP(CClassView, CDockablePane)
 	ON_WM_SETFOCUS()
 	ON_COMMAND_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnSort)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnUpdateSort)
-	ON_NOTIFY(NM_DBLCLK, 2, OnTreeClick)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -118,63 +117,6 @@ int CClassView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	FillClassView();
 
 	return 0;
-}
-
-afx_msg void CClassView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
-{
-	if (pNMHDR && pNMHDR->code == NM_DBLCLK && pNMHDR->hwndFrom == m_wndClassView.m_hWnd)
-	{
-		HTREEITEM hItem = m_wndClassView.GetSelectedItem();
-		if (hItem)
-		{
-			std::mt19937 gen(rd());
-			std::uniform_int_distribution<int> dis(1, 508);
-			CString dirCatalogue = _T(DIR_CATALOGUE);
-			CString s = dirCatalogue + m_wndClassView.GetItemText(hItem);
-			CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
-			if (pDoc)
-				pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
-				const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
-				CString str;
-				str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
-				pDoc->SendOutputMessage(str);
-				if (!scene) {
-					CString errorMsg = _T("Failed to load model: ");
-					errorMsg += pDoc->GetAssimp().GetErrorString();
-					AfxMessageBox(errorMsg);
-					return;
-				}
-				pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
-				TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
-				Handle(AIS_Shape) aShape = new AIS_Shape(shape);
-				objList objEntry;
-				objEntry.name = m_wndClassView.GetItemText(hItem);
-				objEntry.shape = aShape;
-				objEntry.topo_shape = shape;
-				objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
-				pDoc->GetShapeList().push_back(objEntry);
-				pDoc->SendOutputMessage(_T("Conversione finita!"));
-				CMainFrame* pFrame = pDoc->GetMainFrame();
-				if (pFrame != nullptr)
-				{
-					CMFCOCC01View* pMFCView = nullptr;
-					POSITION pos = pDoc->GetFirstViewPosition();
-					while (pos != nullptr)
-					{
-						CView* pView = pDoc->GetNextView(pos);
-						if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
-						{
-							pMFCView = (CMFCOCC01View*)pView;
-						}
-					}
-					if (pMFCView != nullptr)
-					{
-						pMFCView->SendMessage(WM_REDRAW_VIEW);
-					}
-				}
-		}
-	}
-	*pResult = 0;
 }
 
 void CClassView::OnSize(UINT nType, int cx, int cy)

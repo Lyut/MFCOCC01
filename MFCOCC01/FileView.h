@@ -3,6 +3,10 @@
 
 #include "ViewTree.h"
 
+#include <iostream>
+#include <filesystem>
+
+
 class CFileViewToolBar : public CMFCToolBar
 {
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
@@ -22,12 +26,16 @@ public:
 	void AdjustLayout();
 	void OnChangeVisualStyle();
 
+	void InsertItem(LPCTSTR str);
+
 // Attributi
 protected:
 
 	CViewTree m_wndFileView;
 	CImageList m_FileViewImages;
 	CFileViewToolBar m_wndToolBar;
+
+	std::random_device rd;
 
 protected:
 	void FillFileView();
@@ -49,6 +57,7 @@ protected:
 	afx_msg void OnEditClear();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+	afx_msg void OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 };

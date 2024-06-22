@@ -3,8 +3,6 @@
 
 #include "ViewTree.h"
 
-#include <iostream>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -27,6 +25,7 @@ public:
 
 	void AdjustLayout();
 	void OnChangeVisualStyle();
+
 	void InsertItem(LPCTSTR str);
 
 protected:
@@ -34,7 +33,6 @@ protected:
 	CViewTree m_wndClassView;
 	CImageList m_ClassViewImages;
 	UINT m_nCurrSort;
-	std::random_device rd;
 
 	void FillClassView();
 
@@ -56,7 +54,6 @@ protected:
 	//afx_msg LRESULT OnChangeActiveTab(WPARAM, LPARAM);
 	afx_msg void OnSort(UINT id);
 	afx_msg void OnUpdateSort(CCmdUI* pCmdUI);
-	afx_msg void OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 };
