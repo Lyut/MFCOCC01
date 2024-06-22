@@ -7,6 +7,9 @@
 #include "MFCOCC01.h"
 #include "MFCOCC01Doc.h"
 
+
+#include "MFCOCC01View.h"
+
 class CClassViewMenuButton : public CMFCToolBarMenuButton
 {
 	friend class CClassView;
@@ -124,6 +127,8 @@ afx_msg void CClassView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
 		HTREEITEM hItem = m_wndClassView.GetSelectedItem();
 		if (hItem)
 		{
+			std::mt19937 gen(rd());
+			std::uniform_int_distribution<int> dis(1, 508);
 			CString dirCatalogue = _T(DIR_CATALOGUE);
 			CString s = dirCatalogue + m_wndClassView.GetItemText(hItem);
 			CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
@@ -146,8 +151,12 @@ afx_msg void CClassView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
 				objEntry.name = m_wndClassView.GetItemText(hItem);
 				objEntry.shape = aShape;
 				objEntry.topo_shape = shape;
+				objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
 				pDoc->GetShapeList().push_back(objEntry);
 				pDoc->SendOutputMessage(_T("Conversione finita!"));
+				Handle(V3d_Viewer) viewer = pDoc->GetViewer();
+				viewer->Invalidate();
+				viewer->Redraw();
 		}
 	}
 	*pResult = 0;

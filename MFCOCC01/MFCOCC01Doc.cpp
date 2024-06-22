@@ -50,8 +50,8 @@ BOOL CMFCOCC01Doc::InitOCC()
 	//改变背景颜色
 	//m_hViewer->SetDefaultTypeOfView(V3d_ORTHOGRAPHIC);
 	m_hAISContext = new AIS_InteractiveContext(m_hViewer);  //创建一个交互文档
-	m_hAISContext->DefaultDrawer()->SetWireDraw(Standard_True);
-	m_hAISContext->DefaultDrawer()->SetFaceBoundaryDraw(Standard_True);
+	m_hAISContext->DefaultDrawer()->SetWireDraw(Standard_False);
+	m_hAISContext->DefaultDrawer()->SetFaceBoundaryDraw(Standard_False);
 	//m_hAISContext->DefaultDrawer()->
 	//m_hAISContext->DefaultDrawer()->SetUIsoAspect(11);
 

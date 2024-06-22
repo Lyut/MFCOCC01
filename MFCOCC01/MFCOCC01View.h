@@ -41,7 +41,6 @@ protected:
 public:
 	virtual ~CMFCOCC01View();
 	void FitAll();
-	void DisplayTextOnTopOfModel(const TCollection_AsciiString& text, const gp_Pnt& position);
 	gp_Pnt GetShapeCenter(const TopoDS_Shape& shape);
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -60,6 +59,7 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	DECLARE_MESSAGE_MAP()
 
 private:
@@ -72,6 +72,8 @@ private:
 	std::random_device rd;
 	Handle(AIS_Shape) m_selectedBox;
 	Quantity_Color m_originalColor;
+	CPoint m_lastMousePos;
+
 };
 
 #ifndef _DEBUG  // versione di debug in MFCOCC01View.cpp

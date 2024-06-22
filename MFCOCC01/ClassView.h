@@ -34,6 +34,7 @@ protected:
 	CViewTree m_wndClassView;
 	CImageList m_ClassViewImages;
 	UINT m_nCurrSort;
+	std::random_device rd;
 
 	void FillClassView();
 

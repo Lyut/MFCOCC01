@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CMFCOCC01View, CView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMFCOCC01View::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_SIZE()
@@ -43,9 +44,6 @@ END_MESSAGE_MAP()
 CMFCOCC01View::CMFCOCC01View() noexcept
 {
 	// TODO: aggiungere qui il codice di costruzione.
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> dis(1, 508);
 }
 
 CMFCOCC01View::~CMFCOCC01View()
@@ -86,14 +84,19 @@ void CMFCOCC01View::OnDraw(CDC* pDC)
 	Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 
 	for (objList obj : GetDocument()->GetShapeList()) {
+		Quantity_Color textColor(Quantity_NOC_BLACK);
+		Quantity_Color color(obj.color);
+
+		obj.shape->SetColor(color);
 		context->Display(obj.shape, Standard_True);
 
 		gp_Pnt shapeCenter = GetShapeCenter(obj.topo_shape);
-		shapeCenter.SetZ(shapeCenter.Z() + 100);
+		shapeCenter.SetY(shapeCenter.Y() * 2.3);
+		shapeCenter.SetZ(shapeCenter.Z() * 2);
+		shapeCenter.SetX(shapeCenter.X() * 2);
 		Handle(AIS_TextLabel) aTextLabel = new AIS_TextLabel();
 		aTextLabel->SetText(TCollection_ExtendedString(obj.name));
 		aTextLabel->SetPosition(shapeCenter);
-		Quantity_Color textColor(Quantity_NOC_BLACK);
 		aTextLabel->SetColor(textColor);
 		aTextLabel->SetFont("RomanS");
 
@@ -207,6 +210,16 @@ void CMFCOCC01View::OnRButtonUp(UINT /* nFlags */, CPoint point)
 	OnContextMenu(this, point);
 }
 
+void CMFCOCC01View::OnLButtonUp(UINT /* nFlags */, CPoint point)
+{
+	m_lastMousePos = point;
+	CMFCOCC01Doc* pDoc = GetDocument();
+	if (pDoc && pDoc->GetViewer()) {
+		Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
+		context->UpdateCurrentViewer();
+	}
+}
+
 void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	CView::OnLButtonDown(nFlags, point);
@@ -291,10 +304,14 @@ void CMFCOCC01View::OnSize(UINT nType, int cx, int cy)
 
 void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 {
-	//FlushViewEvents(m_context, m_hView, Standard_True);
-	CView::OnMouseMove(nFlags, point);
+	FlushViewEvents(m_context, m_hView, Standard_True);
+    CView::OnMouseMove(nFlags, point);
 	if (nFlags && MK_LBUTTON) {
-		m_hView->Rotation(point.x, point.y);
+		int dx = point.x - m_lastMousePos.x;
+		int dy = point.y - m_lastMousePos.y;
+
+		m_hView->Rotation(dx, dy);
+
 	}
 
 #ifdef USE_IMGUI
