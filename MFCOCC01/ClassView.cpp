@@ -127,30 +127,12 @@ void CClassView::OnSize(UINT nType, int cx, int cy)
 
 void CClassView::FillClassView()
 {
-	fs::path directoryPath = DIR_CATALOGUE;
-
-	if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
-		AfxMessageBox(_T("Directory catalogo non esistente o comunque non valida!"));
-		HTREEITEM hRoot = m_wndClassView.InsertItem(_T("Catalogo (offline)"), 0, 0);
-	}
-	else {
-		HTREEITEM hRoot = m_wndClassView.InsertItem(_T("Catalogo"), 0, 0);
-		m_wndClassView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
-		// TODO: recurse
-		for (const auto& entry : fs::directory_iterator(directoryPath)) {
-			if (fs::is_directory(entry.path())) {
-				HTREEITEM hDir = m_wndClassView.InsertItem(entry.path().filename().c_str(), 1, 1, hRoot);
-				for (const auto& subentry : fs::directory_iterator(entry.path())) {
-					if (fs::is_regular_file(subentry.path())) {
-						m_wndClassView.InsertItem(subentry.path().filename().c_str(), 3, 3, hDir);
-					}
-				}
-			}
-			else if (fs::is_regular_file(entry.path())) {
-				m_wndClassView.InsertItem(entry.path().filename().c_str(), 3, 3, hRoot);
-			}
+	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	if (pDoc) 
+	{
+		for (objList obj : pDoc->GetShapeList()) {
+			InsertItem(obj.name);
 		}
-		m_wndClassView.Expand(hRoot, TVE_EXPAND);
 	}
 }
 

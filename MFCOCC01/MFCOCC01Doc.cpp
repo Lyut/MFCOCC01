@@ -284,6 +284,7 @@ void CMFCOCC01Doc::OnContextClickedMove()
 				{
 					pDoc->SendOutputMessage(_T("not null"));
 					pDoc->GetSelectedShape()->SetTransparency(0.5);
+					pMFCView->SendMessage(WM_REDRAW_VIEW);
 				}
 			}
 		}

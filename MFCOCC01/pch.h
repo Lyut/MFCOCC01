@@ -68,10 +68,14 @@
 #include <BRepBuilderAPI_MakeFace.hxx>
 #include <TopoDS_Compound.hxx>
 
+#include <afxdb.h>  // Main MFC database support
+
+
 #define WM_OUTPUTMSG_MESSAGE (WM_USER + 1)
 #define WM_INSERTITEM_MESSAGE (WM_USER + 2)
 #define WM_REDRAW_VIEW WM_USER + 3
 #define WM_DETECT_COLLISION WM_USER + 4
+#define WM_FITALL WM_USER + 5
 
 #define DIR_CATALOGUE "C:\\merda\\"
 
@@ -91,6 +95,7 @@ struct objList {
 	CString name;
 	gp_Pnt origin;
 	Quantity_Color color;
+	Quantity_Color originalColor;
 };
 
 /**************************************************************************************/

@@ -106,6 +106,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 	m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
 
+	CRect rect;
+	m_wndStatusBar.GetItemRect(0, &rect);
+	rect.left += 200; // Adjust the position
+	rect.right = rect.left + 160; // Adjust the size
+
+	if (!m_wndProgressBar.Create(WS_CHILD | WS_VISIBLE, rect, &m_wndStatusBar, 1))
+	{
+		TRACE0("Failed to create progress bar\n");
+		AfxMessageBox(_T("fail"));
+		return -1;
+	}
+	m_wndProgressBar.SetRange(0, 10);
+	m_wndProgressBar.SetPos(2);
+
 	// TODO: eliminare queste cinque righe se si desidera che la barra degli strumenti e la barra dei menu non siano ancorabili.
 	m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
 	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);

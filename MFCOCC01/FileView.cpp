@@ -20,6 +20,23 @@ static char THIS_FILE[]=__FILE__;
 
 CFileView::CFileView() noexcept
 {
+	CDatabase db;
+	CString strConnect = _T("Driver={Oracle in OraDB21Home2};Dbq=localhost:1521/ORCLPDB;UID=apiuser;PWD=porcodio99");
+	TRY
+	{
+		if (db.OpenEx(strConnect))
+		{
+			// Connection succeeded
+			// Perform your database operations here
+		}
+	}
+		CATCH(CException, e)
+	{
+		e->ReportError();
+		// Not necessary to delete the exception e.
+	}
+	END_CATCH
+
 }
 
 CFileView::~CFileView()
@@ -102,7 +119,7 @@ void CFileView::FillFileView()
 		HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Catalogo (offline)"), 0, 0);
 	}
 	else {
-		HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Catalogo (offline)"), 0, 0);
+		HTREEITEM hRoot = m_wndFileView.InsertItem(_T("Catalogo"), 0, 0);
 		m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 		// TODO: recurse
 		for (const auto& entry : fs::directory_iterator(directoryPath)) {
@@ -110,12 +127,12 @@ void CFileView::FillFileView()
 				HTREEITEM hDir = m_wndFileView.InsertItem(entry.path().filename().c_str(), 0, 0, hRoot);
 				for (const auto& subentry : fs::directory_iterator(entry.path())) {
 					if (fs::is_regular_file(subentry.path())) {
-						m_wndFileView.InsertItem(subentry.path().filename().c_str(), 1, 1, hDir);
+						m_wndFileView.InsertItem(subentry.path().filename().c_str(), 2, 2, hDir);
 					}
 				}
 			}
 			else if (fs::is_regular_file(entry.path())) {
-				m_wndFileView.InsertItem(entry.path().filename().c_str(), 1, 1, hRoot);
+				m_wndFileView.InsertItem(entry.path().filename().c_str(), 2, 2, hRoot);
 			}
 		}
 		m_wndFileView.Expand(hRoot, TVE_EXPAND);
@@ -158,57 +175,7 @@ void CFileView::FillFileView()
 afx_msg void CFileView::OnTreeClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	if (pNMHDR && pNMHDR->code == NM_DBLCLK && pNMHDR->hwndFrom == m_wndFileView.m_hWnd)
-	{
-		HTREEITEM hItem = m_wndFileView.GetSelectedItem();
-		if (hItem)
-		{
-			std::mt19937 gen(rd());
-			std::uniform_int_distribution<int> dis(1, 508);
-			CString dirCatalogue = _T(DIR_CATALOGUE);
-			CString s = dirCatalogue + m_wndFileView.GetItemText(hItem);
-			CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
-			if (pDoc)
-				pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
-			const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
-			CString str;
-			str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
-			pDoc->SendOutputMessage(str);
-			if (!scene) {
-				CString errorMsg = _T("Failed to load model: ");
-				errorMsg += pDoc->GetAssimp().GetErrorString();
-				AfxMessageBox(errorMsg);
-				return;
-			}
-			pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
-			TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
-			Handle(AIS_Shape) aShape = new AIS_Shape(shape);
-			objList objEntry;
-			objEntry.name = m_wndFileView.GetItemText(hItem);
-			objEntry.shape = aShape;
-			objEntry.topo_shape = shape;
-			objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
-			pDoc->GetShapeList().push_back(objEntry);
-			pDoc->SendOutputMessage(_T("Conversione finita!"));
-			CMainFrame* pFrame = pDoc->GetMainFrame();
-			if (pFrame != nullptr)
-			{
-				CMFCOCC01View* pMFCView = nullptr;
-				POSITION pos = pDoc->GetFirstViewPosition();
-				while (pos != nullptr)
-				{
-					CView* pView = pDoc->GetNextView(pos);
-					if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
-					{
-						pMFCView = (CMFCOCC01View*)pView;
-					}
-				}
-				if (pMFCView != nullptr)
-				{
-					pMFCView->SendMessage(WM_REDRAW_VIEW);
-				}
-			}
-		}
-	}
+		OnFileOpen();
 	*pResult = 0;
 }
 
@@ -270,7 +237,60 @@ void CFileView::OnProperties()
 
 void CFileView::OnFileOpen()
 {
-	// TODO: aggiungere qui il codice del gestore di comandi
+	HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+	if (hItem)
+	{
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<int> dis(1, 508);
+		CString dirCatalogue = _T(DIR_CATALOGUE);
+		CString s = dirCatalogue + m_wndFileView.GetItemText(hItem);
+		CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+		if (pDoc)
+			pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
+		const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_GenSmoothNormals);
+		CString str;
+		str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
+		pDoc->SendOutputMessage(str);
+		if (!scene) {
+			CString errorMsg = _T("Failed to load model: ");
+			errorMsg += pDoc->GetAssimp().GetErrorString();
+			AfxMessageBox(errorMsg);
+			return;
+		}
+		pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
+		TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
+		Handle(AIS_Shape) aShape = new AIS_Shape(shape);
+		objList objEntry;
+		objEntry.name = m_wndFileView.GetItemText(hItem);
+		objEntry.shape = aShape;
+		objEntry.topo_shape = shape;
+		objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
+		objEntry.originalColor = objEntry.color;
+		pDoc->GetShapeList().push_back(objEntry);
+		pDoc->SendOutputMessage(_T("Conversione finita!"));
+		CMainFrame* pFrame = pDoc->GetMainFrame();
+		if (pFrame != nullptr)
+		{
+			CMFCOCC01View* pMFCView = nullptr;
+			POSITION pos = pDoc->GetFirstViewPosition();
+			while (pos != nullptr)
+			{
+				CView* pView = pDoc->GetNextView(pos);
+				if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+				{
+					pMFCView = (CMFCOCC01View*)pView;
+				}
+			}
+			if (pMFCView != nullptr)
+			{
+				pMFCView->SendMessage(WM_REDRAW_VIEW);
+				pMFCView->SendMessage(WM_FITALL);
+				CString str;
+				str.Format(_T("%s 0x%p"), objEntry.name, objEntry.shape);
+				pFrame->GetClassView().InsertItem(str);
+			}
+		}
+	}
 }
 
 void CFileView::OnFileOpenWith()

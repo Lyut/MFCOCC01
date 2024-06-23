@@ -39,6 +39,7 @@ BEGIN_MESSAGE_MAP(CMFCOCC01View, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_MESSAGE(WM_REDRAW_VIEW, &CMFCOCC01View::OnRedrawView)
 	ON_MESSAGE(WM_DETECT_COLLISION, &CMFCOCC01View::DetectCollision)
+	ON_MESSAGE(WM_FITALL, &CMFCOCC01View::FitAllMsg)
 END_MESSAGE_MAP()
 
 // Costruzione/distruzione di CMFCOCC01View
@@ -99,9 +100,10 @@ LRESULT CMFCOCC01View::OnRedrawView(WPARAM wParam, LPARAM lParam)
 		aTextLabel->SetPosition(shapeCenter);
 		aTextLabel->SetColor(textColor);
 		aTextLabel->SetFont("RomanS");
+		aTextLabel->SetDisplayType(Aspect_TODT_DEKALE);
 
 		context->Display(aTextLabel, Standard_True);
-		FitAll();
+
 	}
 	return 0;
 }
@@ -193,6 +195,11 @@ void CMFCOCC01View::FitAll()
 	m_hView->ZFitAll();
 }
 
+LRESULT CMFCOCC01View::FitAllMsg(WPARAM wParam, LPARAM lParam)
+{
+	FitAll();
+	return 0;
+}
 
 // Stampa di CMFCOCC01View
 
@@ -228,12 +235,12 @@ void CMFCOCC01View::OnRButtonUp(UINT /* nFlags */, CPoint point)
 
 void CMFCOCC01View::OnLButtonUp(UINT /* nFlags */, CPoint point)
 {
-	m_lastMousePos = point;
 	CMFCOCC01Doc* pDoc = GetDocument();
 	if (pDoc && pDoc->GetViewer()) {
 		Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
 		context->UpdateCurrentViewer();
 	}
+	 //Invalidate();
 }
 
 LRESULT CMFCOCC01View::DetectCollision(WPARAM wParam, LPARAM lParam)
@@ -250,8 +257,8 @@ LRESULT CMFCOCC01View::DetectCollision(WPARAM wParam, LPARAM lParam)
 
 void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	CView::OnLButtonDown(nFlags, point);
 
+	m_lastMousePos = point;
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	GLdouble modelview[16];
@@ -279,36 +286,47 @@ void CMFCOCC01View::OnLButtonDown(UINT nFlags, CPoint point)
 			// Restore the original color of the previously selected panel
 			if (!m_selectedBox.IsNull())
 			{
-				/*for (Panel& panel : GetDocument()->GetPanelList())
+				for (objList& obj : GetDocument()->GetShapeList())
 				{
-					if (panel.shape == m_selectedBox)
+					if (obj.shape == m_selectedBox)
 					{
-						m_selectedBox->SetColor(panel.originalColor);
+						m_selectedBox->SetColor(obj.originalColor);
 						context->Redisplay(m_selectedBox, true);
 						break;
 					}
-				} */
+				} 
 			}
 
 			// Update m_selectedBox and set the new selection color
 			m_selectedBox = detectedShape;
 
 			// Find the corresponding panel for the newly selected box and update its color
-			/*for (Panel& panel : GetDocument()->GetPanelList())
+			for (objList& obj : GetDocument()->GetShapeList())
 			{
-				if (panel.shape == m_selectedBox)
+				if (obj.shape == m_selectedBox)
 				{
-					m_originalColor = panel.color;  // Store the panel's original color
+					m_originalColor = obj.color;  // Store the panel's original color
 					m_selectedBox->SetColor(Quantity_NOC_RED);
 					break;
 				}
-			} */
+			} 
 
 			context->Redisplay(m_selectedBox, true);
 		}
 	}
+	else
+	{
+		for (objList& obj : GetDocument()->GetShapeList())
+		{
+				obj.color = obj.originalColor;
+				obj.shape->SetColor(obj.color);
+				context->Redisplay(obj.shape, true);
+		}
+	}
 
 	context->UpdateCurrentViewer();
+
+	CView::OnLButtonDown(nFlags, point);
 }
 
 void CMFCOCC01View::OnContextMenu(CWnd* /* pWnd */, CPoint point)
@@ -334,11 +352,14 @@ void CMFCOCC01View::OnMouseMove(UINT nFlags, CPoint point)
 {
 	FlushViewEvents(m_context, m_hView, Standard_True);
     CView::OnMouseMove(nFlags, point);
-	if (nFlags && MK_LBUTTON) {
+	if (nFlags & MK_LBUTTON) {
 		int dx = point.x - m_lastMousePos.x;
 		int dy = point.y - m_lastMousePos.y;
 
 		m_hView->Rotation(dx, dy);
+		CMFCOCC01Doc* pDoc = GetDocument();
+		Handle(AIS_InteractiveContext) context = pDoc->GetAISContext();
+		context->UpdateCurrentViewer();
 
 	}
 

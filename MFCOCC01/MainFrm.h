@@ -47,6 +47,7 @@ protected:  // membri incorporati della barra di controllo
 	CClassView        m_wndClassView;
 	COutputWnd        m_wndOutput;
 	CPropertiesWnd    m_wndProperties;
+	CProgressCtrl	  m_wndProgressBar;
 
 // Funzioni generate per la mappa dei messaggi
 protected:
