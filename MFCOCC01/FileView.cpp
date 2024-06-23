@@ -246,10 +246,10 @@ void CFileView::OnFileOpen()
 		CString s = dirCatalogue + m_wndFileView.GetItemText(hItem);
 		CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
 		if (pDoc)
-			pDoc->SendOutputMessage(_T("Importazione ") + s + _T("..."));
+			pDoc->SendOutputMessage(_T(__FILE__ " >> Importazione ") + s + _T("..."));
 		const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_GenSmoothNormals);
 		CString str;
-		str.Format(_T("Importazione finita! (%i mesh)"), scene->mNumMeshes);
+		str.Format(_T(__FILE__ " >> Importazione finita! (%i mesh)"), scene->mNumMeshes);
 		pDoc->SendOutputMessage(str);
 		if (!scene) {
 			CString errorMsg = _T("Failed to load model: ");
@@ -257,7 +257,7 @@ void CFileView::OnFileOpen()
 			AfxMessageBox(errorMsg);
 			return;
 		}
-		pDoc->SendOutputMessage(_T("Inizio conversione oggetto..."));
+		pDoc->SendOutputMessage(_T(__FILE__ " >> Inizio conversione oggetto..."));
 		TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
 		Handle(AIS_Shape) aShape = new AIS_Shape(shape);
 		objList objEntry;
@@ -266,8 +266,9 @@ void CFileView::OnFileOpen()
 		objEntry.topo_shape = shape;
 		objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
 		objEntry.originalColor = objEntry.color;
+		objEntry.textLabel = new AIS_TextLabel();
 		pDoc->GetShapeList().push_back(objEntry);
-		pDoc->SendOutputMessage(_T("Conversione finita!"));
+		pDoc->SendOutputMessage(_T(__FILE__ " >> Conversione finita!"));
 		CMainFrame* pFrame = pDoc->GetMainFrame();
 		if (pFrame != nullptr)
 		{

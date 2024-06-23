@@ -93,16 +93,15 @@ LRESULT CMFCOCC01View::OnRedrawView(WPARAM wParam, LPARAM lParam)
 		shapeCenter.SetY(shapeCenter.Y() * 2.3);
 		shapeCenter.SetZ(shapeCenter.Z() * 2);
 		shapeCenter.SetX(shapeCenter.X() * 2);
-		Handle(AIS_TextLabel) aTextLabel = new AIS_TextLabel();
 		CString str;
 		str.Format(_T("%s (0x%p)"), obj.name, obj.shape);
-		aTextLabel->SetText(TCollection_ExtendedString(str));
-		aTextLabel->SetPosition(shapeCenter);
-		aTextLabel->SetColor(textColor);
-		aTextLabel->SetFont("RomanS");
-		aTextLabel->SetDisplayType(Aspect_TODT_DEKALE);
+		obj.textLabel->SetText(TCollection_ExtendedString(str));
+		obj.textLabel->SetPosition(shapeCenter);
+		obj.textLabel->SetColor(textColor);
+		obj.textLabel->SetFont("RomanS");
+		obj.textLabel->SetDisplayType(Aspect_TODT_DEKALE);
 
-		context->Display(aTextLabel, Standard_True);
+		context->Display(obj.textLabel, Standard_True);
 
 	}
 	return 0;

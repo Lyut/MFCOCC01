@@ -78,4 +78,5 @@ private:
 public:
 	afx_msg void OnOttimizzazioneIniziasimulazione();
 	afx_msg void OnContextClickedMove();
+	afx_msg void OnContextClickedDelete();
 };

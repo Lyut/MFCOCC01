@@ -27,6 +27,7 @@ IMPLEMENT_DYNCREATE(CMFCOCC01Doc, CDocument)
 BEGIN_MESSAGE_MAP(CMFCOCC01Doc, CDocument)
 	ON_COMMAND(ID_OTTIMIZZAZIONE_INIZIASIMULAZIONE, &CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione)
 	ON_COMMAND(ID_MODIFICA_MUOVI, &CMFCOCC01Doc::OnContextClickedMove)
+	ON_COMMAND(ID_MODIFICA_ELIMINA, &CMFCOCC01Doc::OnContextClickedDelete)
 END_MESSAGE_MAP()
 
 
@@ -79,7 +80,7 @@ TopoDS_Shape CMFCOCC01Doc::ConvertAssimpToOpenCASCADE(const aiScene* scene) {
 		aiMesh* mesh = scene->mMeshes[i];
 
 		CString str;
-		str.Format(_T("Conversione... (%i mesh, %i facce)"), scene->mNumMeshes, mesh->mNumFaces);
+		str.Format(_T(__FILE__ " >> Conversione... (%i mesh, %i facce)"), scene->mNumMeshes, mesh->mNumFaces);
 		SendOutputMessage(str);
 
 		for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
@@ -261,7 +262,6 @@ void CMFCOCC01Doc::OnOttimizzazioneIniziasimulazione()
 
 void CMFCOCC01Doc::OnContextClickedMove()
 {
-	SendOutputMessage(_T("Chiamata!"));
 	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
 	if (pDoc) {
 		CMainFrame* pFrame = pDoc->GetMainFrame();
@@ -282,9 +282,55 @@ void CMFCOCC01Doc::OnContextClickedMove()
 				pMFCView->SendMessage(WM_DETECT_COLLISION);
 				if (!pDoc->GetSelectedShape().IsNull())
 				{
-					pDoc->SendOutputMessage(_T("not null"));
 					pDoc->GetSelectedShape()->SetTransparency(0.5);
 					pMFCView->SendMessage(WM_REDRAW_VIEW);
+				}
+			}
+		}
+	}
+}
+
+
+void CMFCOCC01Doc::OnContextClickedDelete()
+{
+	CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+	if (pDoc) {
+		CMainFrame* pFrame = pDoc->GetMainFrame();
+		if (pFrame != nullptr)
+		{
+			CMFCOCC01View* pMFCView = nullptr;
+			POSITION pos = pDoc->GetFirstViewPosition();
+			while (pos != nullptr)
+			{
+				CView* pView = pDoc->GetNextView(pos);
+				if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+				{
+					pMFCView = (CMFCOCC01View*)pView;
+				}
+			}
+			if (pMFCView != nullptr)
+			{
+				pMFCView->SendMessage(WM_DETECT_COLLISION);
+				if (!pDoc->GetSelectedShape().IsNull())
+				{
+					auto& shapeList = pDoc->GetShapeList();
+					for (auto it = shapeList.begin(); it != shapeList.end(); )
+					{
+						if (it->shape == pDoc->GetSelectedShape())
+						{
+							CString str;
+							str.Format(_T( __FILE__ " >> Rimozione %s (0x%p)"), it->name, it->shape);
+							pDoc->SendOutputMessage(str);
+							pDoc->GetAISContext()->Remove(it->shape, Standard_True);
+							pDoc->GetAISContext()->Remove(it->textLabel, Standard_True);
+							it = shapeList.erase(it);
+							pMFCView->SendMessage(WM_REDRAW_VIEW);
+						}
+						else
+						{
+							++it;
+						}
+					}
 				}
 			}
 		}

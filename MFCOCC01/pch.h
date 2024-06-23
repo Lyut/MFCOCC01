@@ -77,7 +77,8 @@
 #define WM_DETECT_COLLISION WM_USER + 4
 #define WM_FITALL WM_USER + 5
 
-#define DIR_CATALOGUE "C:\\merda\\"
+#define DIR_CATALOGUE "C:\\modelli\\"
+
 
 struct Panel {
 	gp_Pnt origin;
@@ -96,6 +97,11 @@ struct objList {
 	gp_Pnt origin;
 	Quantity_Color color;
 	Quantity_Color originalColor;
+	Handle(AIS_TextLabel) textLabel;
+
+public:
+	bool operator == (const objList& obj) const { return name == obj.name && shape == obj.shape; }
+	bool operator != (const objList& obj) const { return !operator==(obj); }
 };
 
 /**************************************************************************************/
