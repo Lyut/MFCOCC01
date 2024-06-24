@@ -98,7 +98,7 @@ LRESULT CMFCOCC01View::OnRedrawView(WPARAM wParam, LPARAM lParam)
 		obj.textLabel->SetText(TCollection_ExtendedString(str));
 		obj.textLabel->SetPosition(shapeCenter);
 		obj.textLabel->SetColor(textColor);
-		obj.textLabel->SetFont("RomanS");
+		obj.textLabel->SetFont("Comic Sans MS");
 		obj.textLabel->SetDisplayType(Aspect_TODT_DEKALE);
 
 		context->Display(obj.textLabel, Standard_True);

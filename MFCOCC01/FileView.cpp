@@ -20,7 +20,7 @@ static char THIS_FILE[]=__FILE__;
 
 CFileView::CFileView() noexcept
 {
-	CDatabase db;
+	/*CDatabase db;
 	CString strConnect = _T("Driver={Oracle in OraDB21Home2};Dbq=localhost:1521/ORCLPDB;UID=apiuser;PWD=porcodio99");
 	TRY
 	{
@@ -35,7 +35,7 @@ CFileView::CFileView() noexcept
 		e->ReportError();
 		// Not necessary to delete the exception e.
 	}
-	END_CATCH
+	END_CATCH */
 
 }
 
@@ -245,50 +245,51 @@ void CFileView::OnFileOpen()
 		CString dirCatalogue = _T(DIR_CATALOGUE);
 		CString s = dirCatalogue + m_wndFileView.GetItemText(hItem);
 		CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
-		if (pDoc)
+		if (pDoc) {
 			pDoc->SendOutputMessage(_T(__FILE__ " >> Importazione ") + s + _T("..."));
-		const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_GenSmoothNormals);
-		CString str;
-		str.Format(_T(__FILE__ " >> Importazione finita! (%i mesh)"), scene->mNumMeshes);
-		pDoc->SendOutputMessage(str);
-		if (!scene) {
-			CString errorMsg = _T("Failed to load model: ");
-			errorMsg += pDoc->GetAssimp().GetErrorString();
-			AfxMessageBox(errorMsg);
-			return;
-		}
-		pDoc->SendOutputMessage(_T(__FILE__ " >> Inizio conversione oggetto..."));
-		TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
-		Handle(AIS_Shape) aShape = new AIS_Shape(shape);
-		objList objEntry;
-		objEntry.name = m_wndFileView.GetItemText(hItem);
-		objEntry.shape = aShape;
-		objEntry.topo_shape = shape;
-		objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
-		objEntry.originalColor = objEntry.color;
-		objEntry.textLabel = new AIS_TextLabel();
-		pDoc->GetShapeList().push_back(objEntry);
-		pDoc->SendOutputMessage(_T(__FILE__ " >> Conversione finita!"));
-		CMainFrame* pFrame = pDoc->GetMainFrame();
-		if (pFrame != nullptr)
-		{
-			CMFCOCC01View* pMFCView = nullptr;
-			POSITION pos = pDoc->GetFirstViewPosition();
-			while (pos != nullptr)
-			{
-				CView* pView = pDoc->GetNextView(pos);
-				if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
-				{
-					pMFCView = (CMFCOCC01View*)pView;
-				}
+			const aiScene* scene = pDoc->GetAssimp().ReadFile(CT2A(s.GetString()), aiProcess_GenSmoothNormals);
+			CString str;
+			str.Format(_T(__FILE__ " >> Importazione finita! (%i mesh)"), scene->mNumMeshes);
+			pDoc->SendOutputMessage(str);
+			if (!scene) {
+				CString errorMsg = _T("Failed to load model: ");
+				errorMsg += pDoc->GetAssimp().GetErrorString();
+				AfxMessageBox(errorMsg);
+				return;
 			}
-			if (pMFCView != nullptr)
+			pDoc->SendOutputMessage(_T(__FILE__ " >> Inizio conversione oggetto..."));
+			TopoDS_Shape shape = pDoc->ConvertAssimpToOpenCASCADE(scene);
+			Handle(AIS_Shape) aShape = new AIS_Shape(shape);
+			objList objEntry;
+			objEntry.name = m_wndFileView.GetItemText(hItem);
+			objEntry.shape = aShape;
+			objEntry.topo_shape = shape;
+			objEntry.color = static_cast<Quantity_NameOfColor>(dis(gen));
+			objEntry.originalColor = objEntry.color;
+			objEntry.textLabel = new AIS_TextLabel();
+			pDoc->GetShapeList().push_back(objEntry);
+			pDoc->SendOutputMessage(_T(__FILE__ " >> Conversione finita!"));
+			CMainFrame* pFrame = pDoc->GetMainFrame();
+			if (pFrame != nullptr)
 			{
-				pMFCView->SendMessage(WM_REDRAW_VIEW);
-				pMFCView->SendMessage(WM_FITALL);
-				CString str;
-				str.Format(_T("%s 0x%p"), objEntry.name, objEntry.shape);
-				pFrame->GetClassView().InsertItem(str);
+				CMFCOCC01View* pMFCView = nullptr;
+				POSITION pos = pDoc->GetFirstViewPosition();
+				while (pos != nullptr)
+				{
+					CView* pView = pDoc->GetNextView(pos);
+					if (pView->IsKindOf(RUNTIME_CLASS(CMFCOCC01View)))
+					{
+						pMFCView = (CMFCOCC01View*)pView;
+					}
+				}
+				if (pMFCView != nullptr)
+				{
+					pMFCView->SendMessage(WM_REDRAW_VIEW);
+					pMFCView->SendMessage(WM_FITALL);
+					CString str;
+					str.Format(_T("%s 0x%p"), objEntry.name, objEntry.shape);
+					pFrame->GetClassView().InsertItem(str);
+				}
 			}
 		}
 	}

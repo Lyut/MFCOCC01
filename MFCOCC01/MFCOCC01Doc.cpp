@@ -41,6 +41,7 @@ CMFCOCC01Doc::CMFCOCC01Doc() noexcept
 
 CMFCOCC01Doc::~CMFCOCC01Doc()
 {
+	GetShapeList().clear();
 }
 
 BOOL CMFCOCC01Doc::InitOCC()

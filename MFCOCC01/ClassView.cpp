@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CClassView, CDockablePane)
 	ON_WM_SETFOCUS()
 	ON_COMMAND_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnSort)
 	ON_UPDATE_COMMAND_UI_RANGE(ID_SORTING_GROUPBYTYPE, ID_SORTING_SORTBYACCESS, OnUpdateSort)
+	ON_COMMAND(ID_ORDINAMENTO_ELIMINA, OnContextClickDelete)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -302,4 +303,38 @@ void CClassView::OnChangeVisualStyle()
 
 	m_wndToolBar.CleanUpLockedImages();
 	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_SORT_24 : IDR_SORT, 0, 0, TRUE /* Bloccato */);
+}
+
+void CClassView::OnContextClickDelete() {
+	HTREEITEM hItem = m_wndClassView.GetSelectedItem();
+	if (hItem)
+	{
+		CMFCOCC01Doc* pDoc = GET_ACTIVE_DOC(CMFCOCC01Doc);
+		if (pDoc) {
+			CMainFrame* pFrame = pDoc->GetMainFrame();
+			if (pFrame != nullptr)
+			{
+				CMFCOCC01View* pMFCView = nullptr;
+				CString itemText = m_wndClassView.GetItemText(hItem);
+				auto& shapeList = pDoc->GetShapeList();
+				for (auto it = shapeList.begin(); it != shapeList.end(); )
+				{
+					if (it->shape == pDoc->GetSelectedShape())
+					{
+						CString str;
+						str.Format(_T(__FILE__ " >> Rimozione %s (0x%p)"), it->name, it->shape);
+						pDoc->SendOutputMessage(str);
+						pDoc->GetAISContext()->Remove(it->shape, Standard_True);
+						pDoc->GetAISContext()->Remove(it->textLabel, Standard_True);
+						it = shapeList.erase(it);
+						pMFCView->SendMessage(WM_REDRAW_VIEW);
+					}
+					else
+					{
+						++it;
+					}
+				}
+			}
+		}
+	}
 }

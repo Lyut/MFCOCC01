@@ -54,6 +54,7 @@ protected:
 	//afx_msg LRESULT OnChangeActiveTab(WPARAM, LPARAM);
 	afx_msg void OnSort(UINT id);
 	afx_msg void OnUpdateSort(CCmdUI* pCmdUI);
+	afx_msg void OnContextClickDelete();
 
 	DECLARE_MESSAGE_MAP()
 };
